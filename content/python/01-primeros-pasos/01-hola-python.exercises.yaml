@@ -1,0 +1,70 @@
+exercises:
+  - id: hola-mundo
+    type: python
+    title: Tu primer saludo
+    difficulty: 1
+    prompt: 'Escribe un programa que muestre exactamente el texto `Hola, mundo` en pantalla.'
+    starterCode: |
+      # Escribe tu código debajo de esta línea
+    solution: |
+      print("Hola, mundo")
+    hints:
+      - Usa la función `print()`.
+      - El texto debe ir entre comillas `"..."`.
+      - Revisa la coma y la mayúscula inicial.
+    tests: |
+      assert salida != "", "Tu programa no mostró nada. ¿Usaste print()?"
+      assert salida == "Hola, mundo\n", f"Se esperaba 'Hola, mundo' y se mostró: {salida!r}"
+
+  - id: presentacion
+    type: python
+    title: Preséntate en tres líneas
+    difficulty: 2
+    prompt: >-
+      Muestra tres líneas: primero `Me llamo Ada`, luego `Estoy aprendiendo Python` y por
+      último el número `2026` (como número, sin comillas).
+    starterCode: |
+      print("Me llamo Ada")
+    solution: |
+      print("Me llamo Ada")
+      print("Estoy aprendiendo Python")
+      print(2026)
+    hints:
+      - Cada `print()` escribe una línea nueva.
+      - Los números se escriben sin comillas `print(2026)`.
+    tests: |
+      lineas = salida.splitlines()
+      assert len(lineas) == 3, f"Se esperaban 3 líneas y tu programa mostró {len(lineas)}."
+      assert lineas[0] == "Me llamo Ada", "La primera línea no es correcta."
+      assert lineas[1] == "Estoy aprendiendo Python", "La segunda línea no es correcta."
+      assert lineas[2] == "2026", "La tercera línea debe ser el número 2026."
+
+  - id: varios-valores
+    type: python
+    title: Varios valores en una línea
+    difficulty: 2
+    prompt: >-
+      Usando un solo `print()` con cuatro valores separados por comas (dos textos y dos
+      números sin comillas), muestra: `El año 2026 tiene 12 meses`
+    starterCode: ''
+    solution: |
+      print("El año", 2026, "tiene", 12, "meses")
+    hints:
+      - '`print("a", 1)` muestra `a 1`: agrega un espacio entre valores automáticamente.'
+      - No necesitas escribir los espacios dentro de las comillas.
+    tests: |
+      assert salida == "El año 2026 tiene 12 meses\n", f"La salida no coincide: {salida!r}"
+      assert salida.count("\n") == 1, "Debe ser una sola línea."
+
+  - id: que-es-un-comentario
+    type: quiz
+    title: Comentarios
+    difficulty: 1
+    prompt: '¿Qué muestra el programa `print("A")  # print("B")`?'
+    options:
+      - A
+      - B
+      - A y B, en dos líneas
+      - Un error de sintaxis
+    answer: 0
+    explanation: Todo lo que sigue a `#` es un comentario y Python lo ignora, así que solo se ejecuta `print("A")`.

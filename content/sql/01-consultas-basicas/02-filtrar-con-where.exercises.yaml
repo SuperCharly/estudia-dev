@@ -1,0 +1,84 @@
+exercises:
+  - id: productos-baratos
+    type: sql
+    title: Productos económicos
+    difficulty: 1
+    dataset: tienda
+    prompt: Muestra el `nombre` y el `precio` de los productos que cuestan menos de 100.
+    starterCode: |
+      SELECT nombre, precio
+      FROM productos
+    solution: |
+      SELECT nombre, precio
+      FROM productos
+      WHERE precio < 100;
+    hints:
+      - 'Agrega `WHERE` con una comparación después de `FROM productos`.'
+
+  - id: electronica-disponible
+    type: sql
+    title: Electrónica disponible
+    difficulty: 2
+    dataset: tienda
+    prompt: >-
+      Muestra el `nombre` y el `stock` de los productos de la categoría `Electrónica` que
+      estén activos y tengan al menos una unidad en stock.
+    starterCode: ''
+    solution: |
+      SELECT nombre, stock
+      FROM productos
+      WHERE categoria = 'Electrónica' AND activo AND stock > 0;
+    hints:
+      - Son tres condiciones que se deben cumplir a la vez.
+      - 'El texto va entre comillas simples: `''Electrónica''`.'
+      - '`activo` ya es booleano: puedes escribir `AND activo`.'
+
+  - id: clientes-sin-ciudad
+    type: sql
+    title: Clientes sin ciudad
+    difficulty: 2
+    dataset: tienda
+    prompt: Muestra el `nombre` de los clientes que no tienen registrada su ciudad.
+    starterCode: |
+      SELECT nombre
+      FROM clientes
+      WHERE ciudad = NULL;
+    solution: |
+      SELECT nombre
+      FROM clientes
+      WHERE ciudad IS NULL;
+    hints:
+      - Ejecuta el código inicial. ¿Por qué no devuelve nada?
+      - '`NULL` no se compara con `=`: usa `IS NULL`.'
+
+  - id: rango-y-categorias
+    type: sql
+    title: Regalos de temporada
+    difficulty: 3
+    dataset: tienda
+    prompt: >-
+      Muestra el `nombre`, la `categoria` y el `precio` de los productos de las categorías
+      `Papelería` u `Hogar` cuyo precio esté entre 40 y 600 (incluidos).
+    starterCode: ''
+    solution: |
+      SELECT nombre, categoria, precio
+      FROM productos
+      WHERE categoria IN ('Papelería', 'Hogar')
+        AND precio BETWEEN 40 AND 600;
+    hints:
+      - '`IN (...)` simplifica varias comparaciones con `OR`.'
+      - '`BETWEEN 40 AND 600` incluye ambos extremos.'
+      - Si usas `OR`, no olvides los paréntesis.
+
+  - id: null-igual
+    type: quiz
+    title: Comparar con NULL
+    difficulty: 2
+    prompt: '¿Cuántas filas devuelve `SELECT * FROM clientes WHERE ciudad = NULL;`?'
+    options:
+      - Las filas cuya ciudad es NULL
+      - Todas las filas
+      - Ninguna fila
+      - Da un error de sintaxis
+    answer: 2
+    explanation: 'Comparar con `NULL` usando `=` da como resultado "desconocido", nunca verdadero, así que no pasa ninguna fila. Para eso existe `IS NULL`.'

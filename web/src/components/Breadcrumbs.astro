@@ -1,0 +1,25 @@
+---
+/** Ruta de navegación. El último elemento es la página actual (sin enlace). */
+interface Props {
+  items: { label: string; href?: string }[];
+}
+
+const { items } = Astro.props;
+---
+
+<nav aria-label="Ruta de navegación" class="text-sm text-slate-500 dark:text-slate-400">
+  <ol class="flex flex-wrap items-center gap-1.5">
+    {items.map((item, i) => (
+      <li class="flex items-center gap-1.5">
+        {i > 0 && <span aria-hidden="true">›</span>}
+        {item.href ? (
+          <a href={item.href} class="hover:text-brand-600">
+            {item.label}
+          </a>
+        ) : (
+          <span aria-current="page">{item.label}</span>
+        )}
+      </li>
+    ))}
+  </ol>
+</nav>

@@ -1,0 +1,200 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, getEntry, render } from 'astro:content';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import Exercise from '../../../components/exercises/Exercise';
+import LessonProgress from '../../../components/lesson/LessonProgress';
+import LessonSidebar from '../../../components/lesson/LessonSidebar';
+import MarkAsRead from '../../../components/lesson/MarkAsRead';
+import PrerequisiteNotice from '../../../components/lesson/PrerequisiteNotice';
+import Layout from '../../../layouts/Layout.astro';
+import { required } from '../../../lib/assert';
+import { findNeighbors, parseLessonId } from '../../../lib/content/outline';
+import { getExercisesByLesson, getTrackOutlines } from '../../../lib/content/queries';
+import { canAdapt } from '../../../lib/content/schemas';
+import { exerciseItemId, lessonReadItemId } from '../../../lib/progress/model';
+
+export const getStaticPaths = (async () => {
+  const lessons = await getCollection('lessons');
+  return lessons.map((lesson) => {
+    const { trackId, moduleId, slug } = parseLessonId(lesson.id);
+    return { params: { track: trackId, module: moduleId, lesson: slug }, props: { lesson } };
+  });
+}) satisfies GetStaticPaths;
+
+const { lesson } = Astro.props;
+const { Content } = await render(lesson);
+
+const outlines = await getTrackOutlines();
+const { trackId } = parseLessonId(lesson.id);
+const outline = required(
+  outlines.find((o) => o.id === trackId),
+  `La sección "${trackId}" no tiene content/${trackId}/_track.yaml.`,
+);
+const allLessons = outlines.flatMap((o) => o.modules.flatMap((m) => m.lessons));
+const findLesson = (id: string) =>
+  required(
+    allLessons.find((l) => l.id === id),
+    `No existe la lección "${id}".`,
+  );
+
+const lessonOutline = findLesson(lesson.id);
+const lessonModule = required(
+  outline.modules.find((m) => m.id === lessonOutline.moduleId),
+  `No existe el módulo "${lessonOutline.moduleId}".`,
+);
+const { previous, next } = findNeighbors(outline, lesson.id);
+
+const prerequisites = lesson.data.prerequisites.map((id) => {
+  const found = findLesson(id);
+  return { title: found.title, href: found.href, itemIds: found.itemIds };
+});
+
+const exercises = (await getExercisesByLesson()).get(lesson.id) ?? [];
+const datasets = new Map((await getCollection('datasets')).map((d) => [d.id, d.data]));
+const books = await Promise.all(
+  lesson.data.furtherReading.map(async (ref) => ({
+    chapter: ref.chapter,
+    book: required(await getEntry(ref.book), `El libro "${ref.book.id}" no está en catalog/books.json.`).data,
+  })),
+);
+---
+
+<Layout title={`${lesson.data.title} · ${outline.title}`} description={lesson.data.description}>
+  <div class="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
+    <aside class="hidden lg:block">
+      <div class="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto pr-2">
+        <LessonSidebar client:idle outline={outline} currentLessonId={lesson.id} />
+      </div>
+    </aside>
+
+    <div class="min-w-0 space-y-10">
+      <header class="space-y-4">
+        <Breadcrumbs
+          items={[
+            { label: 'Inicio', href: '/' },
+            { label: outline.title, href: outline.href },
+            { label: lessonModule.title },
+          ]}
+        />
+        <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-white">
+          {lesson.data.title}
+        </h1>
+        <p class="text-lg text-slate-600 dark:text-slate-300">{lesson.data.description}</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+          {lesson.data.estimatedMinutes} min de lectura · {exercises.length} ejercicios
+        </p>
+        <LessonProgress client:load itemIds={lessonOutline.itemIds} />
+        {prerequisites.length > 0 && <PrerequisiteNotice client:load prerequisites={prerequisites} />}
+      </header>
+
+      <section aria-labelledby="objetivos" class="rounded-xl border border-slate-200 p-5 dark:border-slate-800">
+        <h2 id="objetivos" class="font-semibold text-slate-900 dark:text-white">
+          Al terminar esta lección podrás:
+        </h2>
+        <ul class="mt-3 list-disc space-y-1 pl-5 text-slate-700 dark:text-slate-300">
+          {lesson.data.objectives.map((objective) => (
+            <li>{objective}</li>
+          ))}
+        </ul>
+      </section>
+
+      <article class="prose max-w-none prose-slate dark:prose-invert prose-headings:scroll-mt-24 prose-a:text-brand-700 dark:prose-a:text-brand-300 prose-code:before:content-none prose-code:after:content-none">
+        <Content />
+      </article>
+
+      <div class="flex flex-wrap items-center gap-4 border-y border-slate-200 py-6 dark:border-slate-800">
+        <MarkAsRead client:load itemId={lessonReadItemId(lesson.id)} />
+        <p class="text-sm text-slate-500 dark:text-slate-400">Márcala cuando hayas leído y entendido la guía.</p>
+      </div>
+
+      <section aria-labelledby="ejercicios" class="space-y-8">
+        <h2 id="ejercicios" class="text-2xl font-bold text-slate-900 dark:text-white">
+          Ejercicios
+        </h2>
+        {exercises.map((exercise) => (
+          <div class="rounded-2xl border border-slate-200 p-5 sm:p-6 dark:border-slate-800">
+            <Exercise
+              client:visible
+              itemId={exerciseItemId(lesson.id, exercise.id)}
+              exercise={exercise}
+              dataset={exercise.type === 'sql' ? datasets.get(exercise.dataset) : undefined}
+            />
+          </div>
+        ))}
+      </section>
+
+      <section aria-labelledby="fuentes" class="grid gap-6 md:grid-cols-2">
+        <div>
+          <h2 id="fuentes" class="font-semibold text-slate-900 dark:text-white">
+            Fuentes oficiales
+          </h2>
+          <ul class="mt-3 space-y-2 text-sm">
+            {lesson.data.sources.map((source) => (
+              <li>
+                <a href={source.url} class="text-brand-700 underline dark:text-brand-300">
+                  {source.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+        {books.length > 0 && (
+          <div>
+            <h2 class="font-semibold text-slate-900 dark:text-white">Profundiza con estos libros gratuitos</h2>
+            <ul class="mt-3 space-y-3 text-sm">
+              {books.map(({ book, chapter }) => (
+                <li>
+                  <a href={book.catalogUrl} class="font-medium text-brand-700 underline dark:text-brand-300">
+                    {book.title}
+                  </a>
+                  <span class="text-slate-600 dark:text-slate-400">
+                    {' '}
+                    — {book.authors.join(', ')}
+                    {chapter && <> · {chapter}</>}
+                  </span>
+                  {!canAdapt(book.license) && (
+                    <span class="block text-xs text-slate-500">
+                      Lectura externa; se enlaza y cita, no se reproduce.
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+
+      <nav aria-label="Lecciones anterior y siguiente" class="grid gap-4 sm:grid-cols-2">
+        {previous ? (
+          <a
+            href={previous.href}
+            class="rounded-xl border border-slate-200 p-4 hover:border-brand-300 dark:border-slate-800 dark:hover:border-brand-700"
+          >
+            <span class="text-sm text-slate-500 dark:text-slate-400">← Anterior</span>
+            <span class="block font-semibold text-slate-900 dark:text-white">{previous.title}</span>
+          </a>
+        ) : (
+          <span />
+        )}
+        {next ? (
+          <a
+            href={next.href}
+            class="rounded-xl border border-slate-200 p-4 text-right hover:border-brand-300 dark:border-slate-800 dark:hover:border-brand-700"
+          >
+            <span class="text-sm text-slate-500 dark:text-slate-400">Siguiente →</span>
+            <span class="block font-semibold text-slate-900 dark:text-white">{next.title}</span>
+          </a>
+        ) : (
+          <a
+            href={outline.href}
+            class="rounded-xl border border-slate-200 p-4 text-right hover:border-brand-300 dark:border-slate-800 dark:hover:border-brand-700"
+          >
+            <span class="text-sm text-slate-500 dark:text-slate-400">Fin de las lecciones disponibles</span>
+            <span class="block font-semibold text-slate-900 dark:text-white">Volver a {outline.title}</span>
+          </a>
+        )}
+      </nav>
+    </div>
+  </div>
+</Layout>

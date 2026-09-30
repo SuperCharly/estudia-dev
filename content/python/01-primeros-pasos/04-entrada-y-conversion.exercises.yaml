@@ -1,0 +1,81 @@
+exercises:
+  - id: saludo-personalizado
+    type: python
+    title: Saludo personalizado
+    difficulty: 1
+    prompt: >-
+      Pide el nombre del usuario con `input("Nombre: ")` y luego muestra `Hola, <nombre>`.
+      Por ejemplo, si escribe `Grace`, se debe mostrar `Hola, Grace`.
+    stdin: [Grace]
+    starterCode: ''
+    solution: |
+      nombre = input("Nombre: ")
+      print(f"Hola, {nombre}")
+    hints:
+      - Guarda el resultado de `input()` en una variable.
+      - 'Puedes usar una f-string: `f"Hola, {nombre}"`.'
+    tests: |
+      lineas = salida.splitlines()
+      assert lineas and lineas[0] == "Nombre: Grace", "Usa exactamente input(\"Nombre: \") para pedir el nombre."
+      assert lineas[-1] == "Hola, Grace", f"Se esperaba 'Hola, Grace' y se mostró {lineas[-1]!r}."
+
+  - id: suma-de-dos
+    type: python
+    title: Suma de dos números
+    difficulty: 2
+    prompt: >-
+      Pide dos números enteros con `input()` (sin mensaje) y muestra su suma. Con las
+      entradas `8` y `34`, se debe mostrar `42`.
+    stdin: ['8', '34']
+    starterCode: |
+      a = input()
+      b = input()
+      print(a + b)  # ¿Por qué muestra 834?
+    solution: |
+      a = int(input())
+      b = int(input())
+      print(a + b)
+    hints:
+      - '`input()` devuelve texto: `"8" + "34"` es `"834"`.'
+      - Convierte cada valor con `int()` antes de sumar.
+    tests: |
+      lineas = salida.splitlines()
+      assert lineas, "Tu programa no mostró nada. ¿Usaste print()?"
+      assert lineas[-1] == "42", f"Se esperaba 42 y se mostró {lineas[-1]!r}."
+
+  - id: propina
+    type: python
+    title: Calculadora de propina
+    difficulty: 3
+    prompt: >-
+      Pide el total de la cuenta (puede tener decimales) y el porcentaje de propina (entero),
+      en ese orden y sin mensajes. Muestra la propina con dos decimales, así:
+      `Propina: $52.50` (para una cuenta de `350` y `15` por ciento).
+    stdin: ['350', '15']
+    starterCode: ''
+    solution: |
+      total = float(input())
+      porcentaje = int(input())
+      propina = total * porcentaje / 100
+      print(f"Propina: ${propina:.2f}")
+    hints:
+      - El total puede tener decimales, así que usa `float()`.
+      - La propina es `total * porcentaje / 100`.
+      - 'Dos decimales en una f-string: `{propina:.2f}`.'
+    tests: |
+      lineas = salida.splitlines()
+      assert lineas, "Tu programa no mostró nada. ¿Usaste print()?"
+      assert lineas[-1] == "Propina: $52.50", f"Se esperaba 'Propina: $52.50' y se mostró {lineas[-1]!r}."
+
+  - id: int-de-decimal
+    type: quiz
+    title: int() y decimales
+    difficulty: 2
+    prompt: '¿Qué muestra `print(int(7.9))`?'
+    options:
+      - '8'
+      - '7'
+      - '7.9'
+      - 'ValueError'
+    answer: 1
+    explanation: '`int()` descarta la parte decimal sin redondear. Para redondear usa `round(7.9)`, que da `8`.'

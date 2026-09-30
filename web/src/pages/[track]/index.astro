@@ -1,0 +1,33 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import TrackRoadmap from '../../components/progress/TrackRoadmap';
+import Layout from '../../layouts/Layout.astro';
+import { getSortedTracks, getTrackOutline } from '../../lib/content/queries';
+
+export const getStaticPaths = (async () => {
+  const tracks = await getSortedTracks();
+  return tracks.map((track) => ({ params: { track: track.id }, props: { track } }));
+}) satisfies GetStaticPaths;
+
+const { track } = Astro.props;
+const outline = await getTrackOutline(track.id);
+---
+
+<Layout title={track.data.title} description={track.data.description}>
+  <div class="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+    <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: track.data.title }]} />
+    <h1 class="mt-3 text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">{track.data.title}</h1>
+    <p class="mt-4 text-lg text-slate-600 dark:text-slate-300">{track.data.description}</p>
+    <p class="mt-4 flex flex-wrap gap-1 text-sm">
+      <span>Referencia principal:</span>
+      <a href={track.data.officialDocs.url} class="font-medium text-brand-700 underline dark:text-brand-300">
+        {track.data.officialDocs.label}
+      </a>
+    </p>
+
+    <div class="mt-10">
+      <TrackRoadmap client:load outline={outline} />
+    </div>
+  </div>
+</Layout>

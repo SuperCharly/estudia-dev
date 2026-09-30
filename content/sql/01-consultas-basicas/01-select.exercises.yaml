@@ -1,0 +1,58 @@
+exercises:
+  - id: todos-los-productos
+    type: sql
+    title: Todos los productos
+    difficulty: 1
+    dataset: tienda
+    prompt: Muestra todas las columnas de todos los registros de la tabla `productos`.
+    starterCode: |
+      -- Escribe tu consulta aquí
+    solution: |
+      SELECT * FROM productos;
+    hints:
+      - '`*` significa "todas las columnas".'
+      - 'La estructura es `SELECT ... FROM tabla;`.'
+
+  - id: nombre-y-precio
+    type: sql
+    title: Solo lo necesario
+    difficulty: 1
+    dataset: tienda
+    prompt: Muestra solo el `nombre` y el `precio` de todos los productos, en ese orden.
+    starterCode: |
+      SELECT *
+      FROM productos;
+    solution: |
+      SELECT nombre, precio
+      FROM productos;
+    hints:
+      - Cambia `*` por los nombres de las columnas separados por coma.
+
+  - id: valor-inventario
+    type: sql
+    title: Valor del inventario
+    difficulty: 2
+    dataset: tienda
+    prompt: >-
+      Para cada producto muestra su `nombre` y una columna llamada `valor_inventario`
+      con el resultado de multiplicar su `precio` por su `stock`.
+    starterCode: ''
+    solution: |
+      SELECT nombre, precio * stock AS valor_inventario
+      FROM productos;
+    hints:
+      - Puedes multiplicar columnas dentro del `SELECT` con `*`.
+      - 'Renombra la columna calculada con `AS valor_inventario`.'
+
+  - id: clausula-from
+    type: quiz
+    title: ¿Qué hace FROM?
+    difficulty: 1
+    prompt: 'En `SELECT nombre FROM clientes;`, ¿qué indica `FROM clientes`?'
+    options:
+      - Las columnas que se van a mostrar
+      - La tabla de la que se leen los datos
+      - El orden de los resultados
+      - Un filtro sobre las filas
+    answer: 1
+    explanation: '`FROM` indica la tabla de origen; las columnas se indican justo después de `SELECT`.'

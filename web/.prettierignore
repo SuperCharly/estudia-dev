@@ -1,0 +1,6 @@
+dist/
+.astro/
+public/pyodide/
+test-results/
+playwright-report/
+package-lock.json

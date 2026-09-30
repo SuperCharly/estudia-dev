@@ -1,0 +1,26 @@
+title: Python
+tagline: El lenguaje ideal para empezar a programar.
+description: >-
+  Aprende a programar desde cero con Python: variables, decisiones, repeticiones,
+  estructuras de datos y funciones. Cada lección incluye ejercicios que se ejecutan
+  directamente en tu navegador.
+order: 1
+officialDocs:
+  label: Tutorial oficial de Python (en español)
+  url: https://docs.python.org/es/3/tutorial/
+modules:
+  - id: 01-primeros-pasos
+    title: Primeros pasos
+    description: Tu primer programa, variables, tipos de datos, operadores y entrada de datos.
+  - id: 02-control-de-flujo
+    title: Control de flujo
+    description: Toma decisiones con if y repite tareas con for y while.
+  - id: 03-estructuras-de-datos
+    title: Estructuras de datos
+    description: Listas, tuplas, diccionarios y conjuntos para organizar información.
+  - id: 04-funciones
+    title: Funciones
+    description: Divide tus programas en piezas reutilizables y fáciles de probar.
+  - id: 05-errores-y-modulos
+    title: Errores y módulos
+    description: Maneja excepciones, usa la biblioteca estándar y construye un mini-proyecto.

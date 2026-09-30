@@ -1,0 +1,94 @@
+exercises:
+  - id: area-rectangulo
+    type: python
+    title: Área de un rectángulo
+    difficulty: 1
+    prompt: >-
+      Calcula el área de un rectángulo con las variables `base` y `altura` y guárdala en
+      una variable llamada `area`.
+    starterCode: |
+      base = 12
+      altura = 7.5
+      # Calcula area
+    solution: |
+      base = 12
+      altura = 7.5
+      area = base * altura
+    hints:
+      - El área de un rectángulo es base por altura.
+      - La multiplicación se escribe con `*`.
+    tests: |
+      assert "area" in globals(), "No encontré la variable `area`."
+      assert area == 90.0, f"El área debería ser 90.0 y es {area!r}."
+
+  - id: es-par
+    type: python
+    title: ¿Es par?
+    difficulty: 2
+    prompt: >-
+      Crea una variable `es_par` que valga `True` si `numero` es par y `False` si no.
+      Debe funcionar con cualquier valor de `numero`, así que no escribas `True` ni `False`
+      a mano: usa una comparación.
+    starterCode: |
+      numero = 42
+      # es_par = ...
+    solution: |
+      numero = 42
+      es_par = numero % 2 == 0
+    hints:
+      - Un número es par si el residuo de dividirlo entre 2 es 0.
+      - '`numero % 2 == 0` ya es una expresión booleana.'
+    tests: |
+      assert "es_par" in globals(), "No encontré la variable `es_par`."
+      assert es_par is True, "42 es par: `es_par` debería ser True."
+      assert "True" not in codigo and "False" not in codigo, "Calcula `es_par` con una comparación, sin escribir True o False."
+      assert "%" in codigo, "Pista: usa el operador módulo `%`."
+
+  - id: horas-y-minutos
+    type: python
+    title: Convierte minutos
+    difficulty: 3
+    prompt: >-
+      Convierte `total_minutos` en horas y minutos restantes. Guarda el resultado en las
+      variables `horas` y `minutos`, y muestra el texto `2 h 5 min` (para 125 minutos).
+      Tu código debe funcionar para cualquier cantidad de minutos.
+    starterCode: |
+      total_minutos = 125
+    solution: |
+      total_minutos = 125
+      horas = total_minutos // 60
+      minutos = total_minutos % 60
+      print(f"{horas} h {minutos} min")
+    hints:
+      - Una hora tiene 60 minutos.
+      - '`//` te da las horas completas y `%` los minutos que sobran.'
+    tests: |
+      assert horas == 2 and minutos == 5, f"Para 125 minutos se esperaban 2 h y 5 min; obtuve {horas} h y {minutos} min."
+      assert salida == "2 h 5 min\n", f"La salida no coincide: {salida!r}"
+      assert "//" in codigo and "%" in codigo, "Usa `//` y `%` para que funcione con cualquier cantidad de minutos."
+
+  - id: precedencia
+    type: quiz
+    title: Precedencia
+    difficulty: 2
+    prompt: '¿Cuánto vale `10 - 2 ** 2 * 2`?'
+    options:
+      - '2'
+      - '32'
+      - '-6'
+      - '12'
+    answer: 0
+    explanation: 'Primero la potencia (`2 ** 2 = 4`), luego la multiplicación (`4 * 2 = 8`) y al final la resta (`10 - 8 = 2`).'
+
+  - id: division
+    type: quiz
+    title: División
+    difficulty: 1
+    prompt: '¿Qué muestra `print(9 / 3)`?'
+    options:
+      - '3'
+      - '3.0'
+      - '0'
+      - 'Un error'
+    answer: 1
+    explanation: 'El operador `/` siempre devuelve un número decimal (`float`), incluso cuando la división es exacta.'

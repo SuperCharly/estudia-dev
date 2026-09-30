@@ -1,0 +1,79 @@
+exercises:
+  - id: crear-variables
+    type: python
+    title: Crea tus variables
+    difficulty: 1
+    prompt: >-
+      Crea una variable `lenguaje` con el texto `Python` y una variable `version` con el
+      número entero `3`.
+    starterCode: |
+      # Crea aquí las variables lenguaje y version
+    solution: |
+      lenguaje = "Python"
+      version = 3
+    hints:
+      - 'El texto va entre comillas: `lenguaje = "Python"`.'
+      - El número va sin comillas.
+    tests: |
+      assert "lenguaje" in globals(), "No encontré la variable `lenguaje`."
+      assert "version" in globals(), "No encontré la variable `version`."
+      assert lenguaje == "Python", f"`lenguaje` debería ser 'Python' y es {lenguaje!r}."
+      assert type(version) is int, f"`version` debe ser un número entero (int), no {type(version).__name__}."
+      assert version == 3, f"`version` debería valer 3 y vale {version!r}."
+
+  - id: actualizar-contador
+    type: python
+    title: Actualiza un contador
+    difficulty: 2
+    prompt: >-
+      La variable `visitas` empieza en `100`. Súmale `25` usando la propia variable (sin
+      escribir `125` directamente) y muestra el resultado con `print`.
+    starterCode: |
+      visitas = 100
+      # Actualiza visitas y muéstrala
+    solution: |
+      visitas = 100
+      visitas = visitas + 25
+      print(visitas)
+    hints:
+      - '`visitas = visitas + 25` toma el valor actual y le suma 25.'
+      - También existe la forma abreviada `visitas += 25`.
+    tests: |
+      assert "125" not in codigo, "Calcula el resultado con la variable en lugar de escribir 125."
+      assert visitas == 125, f"`visitas` debería valer 125 y vale {visitas!r}."
+      assert salida == "125\n", "Recuerda mostrar el valor con print(visitas)."
+
+  - id: ficha-fstring
+    type: python
+    title: Ficha con f-string
+    difficulty: 3
+    prompt: >-
+      Con las variables dadas, muestra exactamente `Laptop: $15999.90 (3 en stock)` usando
+      una f-string. El precio debe mostrarse con dos decimales.
+    starterCode: |
+      producto = "Laptop"
+      precio = 15999.9
+      stock = 3
+    solution: |
+      producto = "Laptop"
+      precio = 15999.9
+      stock = 3
+      print(f"{producto}: ${precio:.2f} ({stock} en stock)")
+    hints:
+      - 'Una f-string empieza con `f`: `f"{producto}"`.'
+      - 'Para dos decimales usa `{precio:.2f}`.'
+    tests: |
+      assert salida == "Laptop: $15999.90 (3 en stock)\n", f"La salida no coincide: {salida!r}"
+
+  - id: tipo-de-dato
+    type: quiz
+    title: ¿Qué tipo es?
+    difficulty: 1
+    prompt: '¿Qué muestra `print(type("3.5"))`?'
+    options:
+      - "<class 'float'>"
+      - "<class 'str'>"
+      - "<class 'int'>"
+      - "<class 'bool'>"
+    answer: 1
+    explanation: Aunque parece un número, `"3.5"` está entre comillas, así que es texto (`str`).

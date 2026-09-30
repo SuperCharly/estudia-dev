@@ -1,0 +1,65 @@
+[
+  {
+    "id": "aprende-python",
+    "title": "Aprende Python",
+    "authors": ["Sergio Delgado Quintero"],
+    "topic": "python",
+    "catalogUrl": "https://librosgratis.dev/leer/python-aprende-sergio-delgado-quintero/",
+    "license": "sin-verificar",
+    "lastChecked": "2026-09-30"
+  },
+  {
+    "id": "think-python-es",
+    "title": "Think Python en español",
+    "authors": ["Allen B. Downey"],
+    "topic": "python",
+    "catalogUrl": "https://librosgratis.dev/leer/think-python-en-espanol/",
+    "license": "sin-verificar",
+    "lastChecked": "2026-09-30"
+  },
+  {
+    "id": "manual-de-python-alf",
+    "title": "Manual de Python",
+    "authors": ["Alfredo Sánchez Alberca"],
+    "topic": "python",
+    "catalogUrl": "https://librosgratis.dev/leer/manual-de-python-aprende-con-alf/",
+    "license": "sin-verificar",
+    "lastChecked": "2026-09-30"
+  },
+  {
+    "id": "python-manual-basico",
+    "title": "Manual básico, iniciación a Python 3",
+    "authors": ["José Miguel Ruiz Torres"],
+    "topic": "python",
+    "catalogUrl": "https://librosgratis.dev/leer/python-manual-basico/",
+    "license": "sin-verificar",
+    "lastChecked": "2026-09-30"
+  },
+  {
+    "id": "sql-apuntes-basicos",
+    "title": "Apuntes básicos de SQL",
+    "authors": ["Unai Estébanez"],
+    "topic": "sql",
+    "catalogUrl": "https://librosgratis.dev/leer/sql-apuntes-basicos/",
+    "license": "sin-verificar",
+    "lastChecked": "2026-09-30"
+  },
+  {
+    "id": "bases-de-datos-relacionales",
+    "title": "Bases de datos relacionales. Un enfoque aplicado y orientado a resultados de aprendizaje",
+    "authors": ["Ernesto Galvis Lista", "Alexander Bustamante Martínez"],
+    "topic": "sql",
+    "catalogUrl": "https://librosgratis.dev/leer/bases-de-datos-relacionales-unimagdalena/",
+    "license": "sin-verificar",
+    "lastChecked": "2026-09-30"
+  },
+  {
+    "id": "diseno-bases-de-datos",
+    "title": "Introducción al diseño de bases de datos",
+    "authors": ["Jordi Casas Roma"],
+    "topic": "sql",
+    "catalogUrl": "https://librosgratis.dev/leer/bases-datos-diseno-introduccion/",
+    "license": "sin-verificar",
+    "lastChecked": "2026-09-30"
+  }
+]

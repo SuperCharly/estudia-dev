@@ -1,0 +1,83 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+/* El tema oscuro se activa con la clase .dark en <html> (ver Layout.astro). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+
+  --color-brand-50: oklch(0.97 0.02 275);
+  --color-brand-100: oklch(0.93 0.04 275);
+  --color-brand-200: oklch(0.87 0.07 275);
+  --color-brand-300: oklch(0.78 0.11 275);
+  --color-brand-400: oklch(0.68 0.16 275);
+  --color-brand-500: oklch(0.58 0.2 275);
+  --color-brand-600: oklch(0.51 0.21 275);
+  --color-brand-700: oklch(0.45 0.19 275);
+  --color-brand-800: oklch(0.38 0.15 275);
+  --color-brand-900: oklch(0.32 0.11 275);
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    scroll-padding-top: 5rem;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-white text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Resaltado de sintaxis de Prism (bloques de código en las lecciones). */
+@layer components {
+  /* Las tablas anchas se desplazan dentro de sí mismas en móvil, sin desbordar la página. */
+  .prose table {
+    @apply block overflow-x-auto;
+  }
+  .prose pre[class*='language-'] {
+    @apply rounded-lg border border-slate-800 bg-slate-900 text-sm leading-relaxed text-slate-100;
+  }
+  .token.comment,
+  .token.prolog {
+    @apply text-slate-400 italic;
+  }
+  .token.keyword,
+  .token.boolean,
+  .token.important {
+    @apply text-violet-300;
+  }
+  .token.string,
+  .token.char {
+    @apply text-emerald-300;
+  }
+  .token.number,
+  .token.constant {
+    @apply text-amber-300;
+  }
+  .token.function,
+  .token.builtin,
+  .token.class-name {
+    @apply text-sky-300;
+  }
+  .token.operator,
+  .token.punctuation {
+    @apply text-slate-300;
+  }
+}

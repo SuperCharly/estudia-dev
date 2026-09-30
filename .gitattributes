@@ -1,0 +1,5 @@
+# Finales de línea LF en el repositorio (evita diferencias entre Windows y Linux/CI).
+* text=auto eol=lf
+*.wasm binary
+*.png binary
+*.ico binary

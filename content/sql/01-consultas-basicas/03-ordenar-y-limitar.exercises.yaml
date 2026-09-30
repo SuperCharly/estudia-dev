@@ -1,0 +1,87 @@
+exercises:
+  - id: del-mas-caro
+    type: sql
+    title: Del más caro al más barato
+    difficulty: 1
+    dataset: tienda
+    ordered: true
+    prompt: Muestra el `nombre` y el `precio` de todos los productos, del más caro al más barato.
+    starterCode: |
+      SELECT nombre, precio
+      FROM productos
+    solution: |
+      SELECT nombre, precio
+      FROM productos
+      ORDER BY precio DESC;
+    hints:
+      - '`ORDER BY` ordena de menor a mayor por defecto; agrega `DESC` para invertirlo.'
+
+  - id: tres-mas-baratos
+    type: sql
+    title: Los tres más baratos con stock
+    difficulty: 2
+    dataset: tienda
+    ordered: true
+    prompt: >-
+      Muestra el `nombre` y el `precio` de los 3 productos más baratos que tengan stock
+      disponible, del más barato al más caro.
+    starterCode: ''
+    solution: |
+      SELECT nombre, precio
+      FROM productos
+      WHERE stock > 0
+      ORDER BY precio
+      LIMIT 3;
+    hints:
+      - 'Primero filtra con `WHERE`, luego ordena y al final limita.'
+      - 'El orden de las cláusulas es `WHERE`, `ORDER BY`, `LIMIT`.'
+
+  - id: categorias-distintas
+    type: sql
+    title: Categorías de la tienda
+    difficulty: 2
+    dataset: tienda
+    ordered: true
+    prompt: Muestra la lista de categorías de productos, sin repetir y en orden alfabético.
+    starterCode: |
+      SELECT categoria
+      FROM productos;
+    solution: |
+      SELECT DISTINCT categoria
+      FROM productos
+      ORDER BY categoria;
+    hints:
+      - '`DISTINCT` va justo después de `SELECT`.'
+
+  - id: clientes-por-ciudad
+    type: sql
+    title: Directorio de clientes
+    difficulty: 3
+    dataset: tienda
+    ordered: true
+    prompt: >-
+      Muestra la `ciudad` y el `nombre` de los clientes que tienen ciudad registrada,
+      ordenados por ciudad y, dentro de cada ciudad, por nombre (ambos en orden
+      alfabético).
+    starterCode: ''
+    solution: |
+      SELECT ciudad, nombre
+      FROM clientes
+      WHERE ciudad IS NOT NULL
+      ORDER BY ciudad, nombre;
+    hints:
+      - Excluye los clientes sin ciudad con `IS NOT NULL`.
+      - 'Puedes ordenar por varias columnas: `ORDER BY columna1, columna2`.'
+
+  - id: limit-sin-order
+    type: quiz
+    title: LIMIT sin ORDER BY
+    difficulty: 2
+    prompt: '¿Qué garantiza `SELECT nombre FROM productos LIMIT 3;`?'
+    options:
+      - Los 3 primeros productos que se insertaron
+      - Los 3 productos con menor id
+      - Como máximo 3 filas, sin un orden garantizado
+      - Los 3 productos más baratos
+    answer: 2
+    explanation: 'Sin `ORDER BY` la base de datos puede devolver cualquier conjunto de filas. `LIMIT` solo garantiza la cantidad máxima.'

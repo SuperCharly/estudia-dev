@@ -1,0 +1,84 @@
+title: Tienda en línea
+description: >-
+  Una pequeña tienda con productos, clientes y pedidos. Las tablas `productos` y
+  `clientes` se usan desde el primer módulo; `pedidos` y `pedido_detalle`, a partir del
+  módulo de relaciones.
+sql: |
+  CREATE TABLE productos (
+    id        INTEGER PRIMARY KEY,
+    nombre    TEXT NOT NULL,
+    categoria TEXT NOT NULL,
+    precio    NUMERIC(10, 2) NOT NULL CHECK (precio >= 0),
+    stock     INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
+    activo    BOOLEAN NOT NULL DEFAULT TRUE
+  );
+
+  INSERT INTO productos (id, nombre, categoria, precio, stock, activo) VALUES
+    (1,  'Lápiz HB',               'Papelería',   8.50,    120, TRUE),
+    (2,  'Cuaderno profesional',   'Papelería',   45.00,   60,  TRUE),
+    (3,  'Bolígrafo azul',         'Papelería',   12.00,   0,   TRUE),
+    (4,  'Mochila escolar',        'Papelería',   520.00,  15,  TRUE),
+    (5,  'Audífonos inalámbricos', 'Electrónica', 899.00,  25,  TRUE),
+    (6,  'Mouse óptico',           'Electrónica', 249.90,  40,  TRUE),
+    (7,  'Teclado mecánico',       'Electrónica', 1450.00, 8,   TRUE),
+    (8,  'Cable USB-C',            'Electrónica', 99.00,   0,   FALSE),
+    (9,  'Taza de cerámica',       'Hogar',       85.00,   30,  TRUE),
+    (10, 'Lámpara de escritorio',  'Hogar',       675.50,  12,  TRUE),
+    (11, 'Novela de misterio',     'Libros',      350.00,  5,   TRUE),
+    (12, 'Atlas del mundo',        'Libros',      410.00,  0,   FALSE);
+
+  CREATE TABLE clientes (
+    id             INTEGER PRIMARY KEY,
+    nombre         TEXT NOT NULL,
+    email          TEXT UNIQUE,
+    ciudad         TEXT,
+    fecha_registro DATE NOT NULL
+  );
+
+  INSERT INTO clientes (id, nombre, email, ciudad, fecha_registro) VALUES
+    (1, 'Ana Torres',  'ana@example.com',    'Guadalajara',      '2024-01-15'),
+    (2, 'Luis Pérez',  'luis@example.com',   'Monterrey',        '2024-03-02'),
+    (3, 'Marta Gómez', 'marta@example.com',  'Guadalajara',      '2024-05-20'),
+    (4, 'Jorge Ruiz',  NULL,                 'Ciudad de México', '2024-07-11'),
+    (5, 'Sofía Díaz',  'sofia@example.com',  NULL,               '2025-01-08'),
+    (6, 'Diego Luna',  'diego@example.com',  'Monterrey',        '2025-02-14'),
+    (7, 'Carmen Vega', 'carmen@example.com', 'Puebla',           '2025-06-30'),
+    (8, 'Raúl Ortiz',  'raul@example.com',   NULL,               '2025-09-01');
+
+  CREATE TABLE pedidos (
+    id         INTEGER PRIMARY KEY,
+    cliente_id INTEGER NOT NULL REFERENCES clientes (id),
+    fecha      DATE NOT NULL,
+    estado     TEXT NOT NULL CHECK (estado IN ('pendiente', 'enviado', 'entregado', 'cancelado'))
+  );
+
+  INSERT INTO pedidos (id, cliente_id, fecha, estado) VALUES
+    (1, 1, '2025-01-10', 'entregado'),
+    (2, 2, '2025-02-03', 'entregado'),
+    (3, 1, '2025-03-15', 'enviado'),
+    (4, 3, '2025-03-20', 'cancelado'),
+    (5, 6, '2025-04-01', 'entregado'),
+    (6, 7, '2025-07-05', 'pendiente'),
+    (7, 1, '2025-08-12', 'pendiente'),
+    (8, 4, '2025-09-09', 'enviado');
+
+  CREATE TABLE pedido_detalle (
+    pedido_id       INTEGER NOT NULL REFERENCES pedidos (id),
+    producto_id     INTEGER NOT NULL REFERENCES productos (id),
+    cantidad        INTEGER NOT NULL CHECK (cantidad > 0),
+    precio_unitario NUMERIC(10, 2) NOT NULL,
+    PRIMARY KEY (pedido_id, producto_id)
+  );
+
+  INSERT INTO pedido_detalle (pedido_id, producto_id, cantidad, precio_unitario) VALUES
+    (1, 1, 10, 8.50),
+    (1, 2, 3,  45.00),
+    (2, 5, 1,  899.00),
+    (3, 6, 2,  249.90),
+    (3, 9, 4,  85.00),
+    (4, 7, 1,  1450.00),
+    (5, 11, 2, 350.00),
+    (5, 2, 5,  45.00),
+    (6, 10, 1, 675.50),
+    (7, 4, 1,  520.00),
+    (8, 5, 2,  899.00);

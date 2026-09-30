@@ -1,0 +1,90 @@
+---
+import TrackCard from '../components/progress/TrackCard';
+import Layout from '../layouts/Layout.astro';
+import { getTrackOutlines } from '../lib/content/queries';
+import { SITE } from '../lib/site';
+
+const outlines = await getTrackOutlines();
+
+const steps = [
+  {
+    title: 'Lee la guía',
+    text: 'Lecciones breves basadas en la documentación oficial y actualizada de cada tecnología.',
+  },
+  {
+    title: 'Practica en el navegador',
+    text: 'Escribe y ejecuta código real sin instalar nada. Cada ejercicio se comprueba al instante.',
+  },
+  {
+    title: 'Avanza a tu ritmo',
+    text: 'Tu progreso se guarda automáticamente. Sigue el orden sugerido o salta a lo que necesites.',
+  },
+];
+---
+
+<Layout>
+  <section class="border-b border-slate-200 bg-gradient-to-b from-brand-50 to-white dark:border-slate-800 dark:from-slate-900 dark:to-slate-950">
+    <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24">
+      <h1 class="max-w-3xl text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl dark:text-white">
+        Aprende a programar, <span class="text-brand-600 dark:text-brand-400">gratis y paso a paso</span>.
+      </h1>
+      <p class="mt-6 max-w-2xl text-lg text-slate-600 dark:text-slate-300">
+        Rutas de estudio en español con guías actualizadas y ejercicios de dificultad progresiva que se ejecutan en tu
+        navegador. Sin registros, sin anuncios y sin costo.
+      </p>
+      <a
+        href="#rutas"
+        class="mt-8 inline-flex rounded-lg bg-brand-600 px-6 py-3 font-semibold text-white shadow-sm hover:bg-brand-700"
+      >
+        Elegir una ruta
+      </a>
+    </div>
+  </section>
+
+  <section id="rutas" aria-labelledby="rutas-titulo" class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+    <h2 id="rutas-titulo" class="text-2xl font-bold text-slate-900 dark:text-white">
+      Rutas de estudio
+    </h2>
+    <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {outlines.map((outline) => (
+        <TrackCard
+          client:load
+          title={outline.title}
+          tagline={outline.tagline}
+          href={outline.href}
+          itemIds={outline.itemIds}
+          lessonCount={outline.lessonCount}
+          exerciseCount={outline.exerciseCount}
+        />
+      ))}
+    </div>
+  </section>
+
+  <section
+    aria-labelledby="como-funciona"
+    class="border-t border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900"
+  >
+    <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+      <h2 id="como-funciona" class="text-2xl font-bold text-slate-900 dark:text-white">
+        Cómo funciona
+      </h2>
+      <ol class="mt-8 grid gap-6 md:grid-cols-3">
+        {steps.map((step, i) => (
+          <li class="rounded-2xl bg-white p-6 shadow-sm dark:bg-slate-950">
+            <span class="grid size-10 place-items-center rounded-full bg-brand-100 font-bold text-brand-700 dark:bg-brand-900/50 dark:text-brand-200">
+              {i + 1}
+            </span>
+            <h3 class="mt-4 font-semibold text-slate-900 dark:text-white">{step.title}</h3>
+            <p class="mt-2 text-slate-600 dark:text-slate-400">{step.text}</p>
+          </li>
+        ))}
+      </ol>
+      <p class="mt-8 text-sm text-slate-600 dark:text-slate-400">
+        La bibliografía complementaria proviene del catálogo de libros gratuitos de programación en español
+        <a class="underline hover:text-brand-600" href={SITE.bibliography.url}>
+          {SITE.bibliography.label}
+        </a>
+      </p>
+    </div>
+  </section>
+</Layout>

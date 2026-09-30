@@ -1,0 +1,15 @@
+# Dependencias y builds (ver también web/.gitignore)
+node_modules/
+
+# Caché de descargas del pipeline de contenido (los libros nunca se versionan)
+pipeline/.cache/
+
+# Variables de entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+.idea/

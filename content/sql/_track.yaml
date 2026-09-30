@@ -1,0 +1,26 @@
+title: SQL
+tagline: El idioma de las bases de datos.
+description: >-
+  Aprende a consultar y modificar bases de datos relacionales con SQL, usando
+  PostgreSQL. Los ejercicios se ejecutan sobre una base de datos real que corre en tu
+  navegador: puedes experimentar sin miedo a romper nada.
+order: 2
+officialDocs:
+  label: Documentación oficial de PostgreSQL
+  url: https://www.postgresql.org/docs/current/tutorial.html
+modules:
+  - id: 01-consultas-basicas
+    title: Consultas básicas
+    description: Lee datos con SELECT, filtra con WHERE y ordena con ORDER BY.
+  - id: 02-agregacion
+    title: Funciones y agregación
+    description: Cuenta, suma y promedia datos agrupados con GROUP BY y HAVING.
+  - id: 03-relaciones
+    title: Relaciones entre tablas
+    description: Claves primarias y foráneas, JOIN y subconsultas.
+  - id: 04-modificar-datos
+    title: Modificar datos
+    description: INSERT, UPDATE, DELETE y creación de tablas con restricciones.
+  - id: 05-proyecto-biblioteca
+    title: 'Mini-proyecto: biblioteca'
+    description: Modela y consulta la base de datos de una biblioteca de principio a fin.
