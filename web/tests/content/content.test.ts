@@ -66,6 +66,18 @@ describe('estructura del contenido', () => {
     }
   });
 
+  it('los textos de los ejercicios solo usan `código en línea` (no Markdown que no se renderiza)', () => {
+    for (const { lessonId, exercise } of allExercises) {
+      const texts = [exercise.prompt, ...('hints' in exercise ? exercise.hints : [])];
+      if (exercise.type === 'quiz') texts.push(exercise.explanation, ...exercise.options);
+      for (const text of texts) {
+        // Lo que va entre comillas invertidas es código (p. ej. `2 ** 3`) y es válido.
+        const prose = text.replace(/`[^`]*`/g, '');
+        expect(prose, `${lessonId}#${exercise.id}: "${text}"`).not.toMatch(/\*\*|__|\[[^\]]+\]\(/);
+      }
+    }
+  });
+
   it('los ids de libros del catálogo son únicos', () => {
     expect(bookIds.size).toBe(content.books.length);
   });

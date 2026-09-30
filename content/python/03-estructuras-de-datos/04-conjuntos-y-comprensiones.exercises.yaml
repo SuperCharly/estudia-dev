@@ -1,0 +1,152 @@
+exercises:
+  - id: palabras-unicas
+    type: python
+    title: Palabras distintas
+    difficulty: 1
+    prompt: >-
+      Lee una frase y muestra cuántas palabras distintas contiene (distinguiendo
+      mayúsculas). Con `el sol y el mar` debe mostrar `4`.
+    stdin: ['el sol y el mar']
+    starterCode: |
+      palabras = input().split()
+      print(len(palabras))
+    solution: |
+      palabras = input().split()
+      print(len(set(palabras)))
+    hints:
+      - Un conjunto elimina los elementos repetidos.
+      - '`len(set(palabras))` cuenta los elementos distintos.'
+    tests: |
+      for frase in ["el sol y el mar", "a a a", "uno dos tres", "Sol sol"]:
+          esperado = str(len(set(frase.split())))
+          obtenido = ultima_linea(ejecutar_con([frase]))
+          assert obtenido == esperado, f"Con '{frase}' se esperaba {esperado} y se mostró {obtenido}."
+
+  - id: numeros-en-comun
+    type: python
+    title: Números en común
+    difficulty: 2
+    prompt: >-
+      Lee dos líneas de números enteros. Muestra, de menor a mayor y separados por un
+      espacio, los números que aparecen en ambas líneas (sin repetir). Si no hay ninguno,
+      muestra `ninguno`.
+    stdin: ['1 2 3 4 4', '4 3 9 4']
+    starterCode: |
+      a = {int(x) for x in input().split()}
+      b = {int(x) for x in input().split()}
+    solution: |
+      a = {int(x) for x in input().split()}
+      b = {int(x) for x in input().split()}
+      comunes = sorted(a & b)
+      if comunes:
+          print(" ".join(str(n) for n in comunes))
+      else:
+          print("ninguno")
+    hints:
+      - La intersección `a & b` contiene los elementos que están en ambos conjuntos.
+      - Ordena el resultado con `sorted()`.
+      - 'Para unir números con espacios, conviértelos a texto: `" ".join(str(n) for n in lista)`.'
+    mistakes:
+      - |
+        a = {int(x) for x in input().split()}
+        b = {int(x) for x in input().split()}
+        print(" ".join(str(n) for n in sorted(a | b)))
+      - |
+        a = {int(x) for x in input().split()}
+        b = {int(x) for x in input().split()}
+        print(" ".join(str(n) for n in (a & b)))
+    tests: |
+      casos = [(["1 2 3 4 4", "4 3 9 4"], "3 4"), (["1 2", "3 4"], "ninguno"), (["10 -1 5 100", "100 5 -1"], "-1 5 100"), (["7", "7 7"], "7")]
+      for entradas, esperado in casos:
+          obtenido = ultima_linea(ejecutar_con(entradas))
+          assert obtenido == esperado, f"Con {entradas} se esperaba '{esperado}' y se mostró '{obtenido}'."
+
+  - id: cuadrados-pares
+    type: python
+    title: Cuadrados de los pares
+    difficulty: 2
+    prompt: >-
+      Lee un número `n` y crea, con una comprensión de listas, la lista `cuadrados` con el
+      cuadrado de cada número par entre 1 y `n` (incluido). Muéstrala con `print`. Con `6`
+      se muestra `[4, 16, 36]`.
+    stdin: ['6']
+    starterCode: |
+      n = int(input())
+      cuadrados = []
+    solution: |
+      n = int(input())
+      cuadrados = [x ** 2 for x in range(1, n + 1) if x % 2 == 0]
+      print(cuadrados)
+    hints:
+      - 'La forma general es `[expresión for x in secuencia if condición]`.'
+      - La expresión es `x ** 2` y la condición, `x % 2 == 0`.
+    mistakes:
+      - |
+        n = int(input())
+        cuadrados = [x ** 2 for x in range(1, n) if x % 2 == 0]
+        print(cuadrados)
+    tests: |
+      import re
+      assert re.search(r"\[[^\]]*\bfor\b[^\]]*\bin\b[^\]]*\]", codigo), "Crea la lista con una comprensión: `[... for ... in ...]`."
+      for n in [6, 1, 9, 2]:
+          esperado = str([x ** 2 for x in range(1, n + 1) if x % 2 == 0])
+          obtenido = ultima_linea(ejecutar_con([str(n)]))
+          assert obtenido == esperado, f"Con {n} se esperaba {esperado} y se mostró {obtenido}."
+
+  - id: longitudes
+    type: python
+    title: Diccionario de longitudes
+    difficulty: 3
+    prompt: >-
+      Lee una línea de palabras y crea, con una comprensión de diccionario, el diccionario
+      `longitudes` que asocia cada palabra de más de 3 letras con su número de letras.
+      Muéstralo con `print`. Con `sol luna estrella mar` se muestra
+      `{'luna': 4, 'estrella': 8}`.
+    stdin: ['sol luna estrella mar']
+    starterCode: |
+      palabras = input().split()
+    solution: |
+      palabras = input().split()
+      longitudes = {p: len(p) for p in palabras if len(p) > 3}
+      print(longitudes)
+    hints:
+      - 'Una comprensión de diccionario tiene la forma `{clave: valor for x in secuencia if condición}`.'
+      - La clave es la palabra y el valor, `len(palabra)`.
+    mistakes:
+      - |
+        palabras = input().split()
+        longitudes = {p: len(p) for p in palabras if len(p) >= 3}
+        print(longitudes)
+    tests: |
+      import re
+      assert re.search(r"\{[^}]*:[^}]*\bfor\b[^}]*\}", codigo), "Crea el diccionario con una comprensión: `{clave: valor for ...}`."
+      for linea in ["sol luna estrella mar", "a bb ccc", "python es genial"]:
+          esperado = str({p: len(p) for p in linea.split() if len(p) > 3})
+          obtenido = ultima_linea(ejecutar_con([linea]))
+          assert obtenido == esperado, f"Con '{linea}' se esperaba {esperado} y se mostró {obtenido}."
+
+  - id: tamano-conjunto
+    type: quiz
+    title: Tamaño de un conjunto
+    difficulty: 1
+    prompt: '¿Cuánto vale `len({1, 2, 2, 3, 3, 3})`?'
+    options:
+      - '6'
+      - '3'
+      - '1'
+      - 'Da un error'
+    answer: 1
+    explanation: 'Un conjunto no guarda repetidos, así que solo contiene 1, 2 y 3.'
+
+  - id: set-vacio
+    type: quiz
+    title: Conjunto vacío
+    difficulty: 2
+    prompt: '¿Qué crea `x = {}`?'
+    options:
+      - Un conjunto vacío
+      - Un diccionario vacío
+      - Una lista vacía
+      - Una tupla vacía
+    answer: 1
+    explanation: 'Las llaves vacías crean un diccionario. Para un conjunto vacío se usa `set()`.'

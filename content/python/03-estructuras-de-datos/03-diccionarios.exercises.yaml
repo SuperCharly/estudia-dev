@@ -1,0 +1,190 @@
+exercises:
+  - id: consulta-precio
+    type: python
+    title: Consulta de precios
+    difficulty: 1
+    prompt: >-
+      Lee el nombre de un producto y muestra su precio usando el diccionario `precios`. Si
+      el producto no está en el diccionario, muestra `No disponible`.
+    stdin: ['café']
+    starterCode: |
+      precios = {"café": 45, "té": 30, "pan": 12, "jugo": 35}
+      producto = input()
+      print(precios[producto])
+    solution: |
+      precios = {"café": 45, "té": 30, "pan": 12, "jugo": 35}
+      producto = input()
+      if producto in precios:
+          print(precios[producto])
+      else:
+          print("No disponible")
+    hints:
+      - Ejecuta el código inicial con un producto que no exista, como `leche`. ¿Qué error aparece?
+      - Usa `if producto in precios:` o `precios.get(producto, "No disponible")`.
+    tests: |
+      casos = [("café", "45"), ("pan", "12"), ("leche", "No disponible"), ("Café", "No disponible")]
+      for entrada, esperado in casos:
+          obtenido = ultima_linea(ejecutar_con([entrada]))
+          assert obtenido == esperado, f"Con '{entrada}' se esperaba '{esperado}' y se mostró '{obtenido}'."
+
+  - id: contar-palabras
+    type: python
+    title: Frecuencia de palabras
+    difficulty: 2
+    prompt: >-
+      Lee una frase y cuenta cuántas veces aparece cada palabra (sin distinguir mayúsculas).
+      Muestra una línea por palabra con el formato `palabra: n`, en el orden en que cada
+      palabra aparece por primera vez.
+    stdin: ['El sol y el mar y el cielo']
+    starterCode: |
+      palabras = input().lower().split()
+      conteo = {}
+    solution: |
+      palabras = input().lower().split()
+      conteo = {}
+      for palabra in palabras:
+          conteo[palabra] = conteo.get(palabra, 0) + 1
+      for palabra, veces in conteo.items():
+          print(f"{palabra}: {veces}")
+    hints:
+      - '`conteo.get(palabra, 0) + 1` suma uno al conteo actual (o empieza en 1).'
+      - Los diccionarios conservan el orden de inserción, así que recorrerlo con `items()` ya da el orden pedido.
+    mistakes:
+      - |
+        palabras = input().lower().split()
+        conteo = {}
+        for palabra in palabras:
+            conteo[palabra] = conteo.get(palabra, 0) + 1
+        for palabra in sorted(conteo):
+            print(f"{palabra}: {conteo[palabra]}")
+      - |
+        palabras = input().split()
+        conteo = {}
+        for palabra in palabras:
+            conteo[palabra] = conteo.get(palabra, 0) + 1
+        for palabra, veces in conteo.items():
+            print(f"{palabra}: {veces}")
+    tests: |
+      def esperado(frase):
+          conteo = {}
+          for p in frase.lower().split():
+              conteo[p] = conteo.get(p, 0) + 1
+          return [f"{p}: {n}" for p, n in conteo.items()]
+      for frase in ["El sol y el mar y el cielo", "hola", "b a b A c"]:
+          lineas = ejecutar_con([frase]).splitlines()[1:]
+          assert lineas == esperado(frase), f"Con '{frase}' se esperaba {esperado(frase)} y se obtuvo {lineas}."
+
+  - id: inventario
+    type: python
+    title: Actualizar el inventario
+    difficulty: 2
+    prompt: >-
+      Lee movimientos de inventario, uno por línea, con el formato `producto cantidad`
+      (la cantidad puede ser negativa), hasta leer `fin`. Actualiza el diccionario
+      `inventario` (los productos nuevos se agregan) y al final muestra cada producto con
+      su cantidad, en orden alfabético: `producto: cantidad`.
+    stdin: ['lápiz 10', 'goma 5', 'lápiz -3', 'fin']
+    starterCode: |
+      inventario = {"cuaderno": 20, "lápiz": 50}
+    solution: |
+      inventario = {"cuaderno": 20, "lápiz": 50}
+      linea = input()
+      while linea != "fin":
+          producto, cantidad = linea.split()
+          inventario[producto] = inventario.get(producto, 0) + int(cantidad)
+          linea = input()
+      for producto in sorted(inventario):
+          print(f"{producto}: {inventario[producto]}")
+    hints:
+      - Lee con un `while` hasta encontrar `fin`, como en el patrón del centinela.
+      - '`producto, cantidad = linea.split()` separa las dos partes.'
+      - '`sorted(inventario)` devuelve las claves en orden alfabético.'
+    mistakes:
+      - |
+        inventario = {"cuaderno": 20, "lápiz": 50}
+        linea = input()
+        while linea != "fin":
+            producto, cantidad = linea.split()
+            inventario[producto] = int(cantidad)
+            linea = input()
+        for producto in sorted(inventario):
+            print(f"{producto}: {inventario[producto]}")
+    tests: |
+      def resultado(entradas):
+          return [l for l in ejecutar_con(entradas).splitlines() if ": " in l]
+      assert resultado(["lápiz 10", "goma 5", "lápiz -3", "fin"]) == ["cuaderno: 20", "goma: 5", "lápiz: 57"], \
+          "Con 'lápiz 10', 'goma 5', 'lápiz -3' se esperaba: cuaderno: 20, goma: 5, lápiz: 57."
+      assert resultado(["fin"]) == ["cuaderno: 20", "lápiz: 50"], "Sin movimientos, el inventario no debe cambiar."
+      assert resultado(["cuaderno -20", "borrador 2", "fin"]) == ["borrador: 2", "cuaderno: 0", "lápiz: 50"], \
+          "Los productos nuevos deben agregarse y el resultado debe estar en orden alfabético."
+
+  - id: agrupar-por-longitud
+    type: python
+    title: Agrupar por longitud
+    difficulty: 3
+    prompt: >-
+      Lee una línea de palabras y agrúpalas por su número de letras en un diccionario cuyas
+      claves son las longitudes y cuyos valores son listas de palabras (en el orden en que
+      aparecen). Muestra los grupos de la longitud menor a la mayor con el formato
+      `3: sol, mar`.
+    stdin: ['sol luna mar cielo nube']
+    starterCode: |
+      palabras = input().split()
+      grupos = {}
+    solution: |
+      palabras = input().split()
+      grupos = {}
+      for palabra in palabras:
+          largo = len(palabra)
+          if largo not in grupos:
+              grupos[largo] = []
+          grupos[largo].append(palabra)
+      for largo in sorted(grupos):
+          print(f"{largo}: {', '.join(grupos[largo])}")
+    hints:
+      - Si la longitud aún no es clave del diccionario, crea una lista vacía para ella.
+      - '`", ".join(lista)` une las palabras con coma y espacio.'
+      - Recorre `sorted(grupos)` para mostrar las longitudes en orden.
+    mistakes:
+      - |
+        palabras = input().split()
+        grupos = {}
+        for palabra in palabras:
+            grupos[len(palabra)] = [palabra]
+        for largo in sorted(grupos):
+            print(f"{largo}: {', '.join(grupos[largo])}")
+    tests: |
+      def esperado(linea):
+          g = {}
+          for p in linea.split():
+              g.setdefault(len(p), []).append(p)
+          return [f"{k}: {', '.join(g[k])}" for k in sorted(g)]
+      for linea in ["sol luna mar cielo nube", "a bb a ccc", "python"]:
+          lineas = ejecutar_con([linea]).splitlines()[1:]
+          assert lineas == esperado(linea), f"Con '{linea}' se esperaba {esperado(linea)} y se obtuvo {lineas}."
+
+  - id: keyerror
+    type: quiz
+    title: Claves inexistentes
+    difficulty: 1
+    prompt: 'Si `d = {"a": 1}`, ¿qué devuelve `d.get("b", 0)`?'
+    options:
+      - 'None'
+      - '0'
+      - 'Un `KeyError`'
+      - '1'
+    answer: 1
+    explanation: '`get` devuelve el valor por defecto que le pases (aquí `0`) cuando la clave no existe. Sin valor por defecto devolvería `None`. En cambio, `d["b"]` produciría un `KeyError`.'
+
+  - id: asignar-clave
+    type: quiz
+    title: Asignar a una clave existente
+    difficulty: 2
+    prompt: '¿Qué contiene `d` después de `d = {"x": 1}` y luego `d["x"] = 5`?'
+    options:
+      - "{'x': 1, 'x': 5}"
+      - "{'x': 5}"
+      - "{'x': 1}"
+      - 'Un error, porque la clave ya existe'
+    answer: 1
+    explanation: 'Las claves son únicas: asignar a una clave existente reemplaza su valor.'

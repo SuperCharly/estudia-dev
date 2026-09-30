@@ -1,0 +1,119 @@
+exercises:
+  - id: pedidos-con-cliente
+    type: sql
+    title: Pedidos con nombre de cliente
+    difficulty: 1
+    dataset: tienda
+    prompt: Muestra el `id` de cada pedido, el `nombre` del cliente que lo hizo y la `fecha` del pedido.
+    starterCode: |
+      SELECT p.id, p.cliente_id, p.fecha
+      FROM pedidos p;
+    solution: |
+      SELECT p.id, c.nombre, p.fecha
+      FROM pedidos p
+      JOIN clientes c ON p.cliente_id = c.id;
+    hints:
+      - 'Agrega `JOIN clientes c ON p.cliente_id = c.id`.'
+      - Cambia `p.cliente_id` por `c.nombre` en el `SELECT`.
+    mistakes:
+      - SELECT p.id, c.nombre, p.fecha FROM pedidos p JOIN clientes c ON p.id = c.id;
+
+  - id: detalle-con-productos
+    type: sql
+    title: Detalle de un pedido
+    difficulty: 2
+    dataset: tienda
+    prompt: Muestra el `nombre` de cada producto del pedido 3, junto con su `cantidad` y su `precio_unitario`.
+    starterCode: ''
+    solution: |
+      SELECT pr.nombre, d.cantidad, d.precio_unitario
+      FROM pedido_detalle d
+      JOIN productos pr ON pr.id = d.producto_id
+      WHERE d.pedido_id = 3;
+    hints:
+      - Une `pedido_detalle` con `productos` por `producto_id`.
+      - Filtra el pedido con `WHERE d.pedido_id = 3`.
+    mistakes:
+      - SELECT pr.nombre, d.cantidad, d.precio_unitario FROM pedido_detalle d JOIN productos pr ON pr.id = d.pedido_id WHERE d.pedido_id = 3;
+
+  - id: entregas-detalladas
+    type: sql
+    title: Qué se entregó y a quién
+    difficulty: 2
+    dataset: tienda
+    prompt: >-
+      Para los pedidos con estado `entregado`, muestra el nombre del cliente, el nombre del
+      producto y la cantidad, una fila por producto entregado.
+    starterCode: ''
+    solution: |
+      SELECT c.nombre AS cliente, pr.nombre AS producto, d.cantidad
+      FROM pedidos p
+      JOIN clientes c        ON c.id = p.cliente_id
+      JOIN pedido_detalle d  ON d.pedido_id = p.id
+      JOIN productos pr      ON pr.id = d.producto_id
+      WHERE p.estado = 'entregado';
+    hints:
+      - Necesitas las cuatro tablas del dataset.
+      - Empieza en `pedidos` y agrega un `JOIN` por cada tabla relacionada.
+      - 'Filtra con `WHERE p.estado = ''entregado''`.'
+    mistakes:
+      - |
+        SELECT c.nombre, pr.nombre, d.cantidad
+        FROM pedidos p
+        JOIN clientes c ON c.id = p.cliente_id
+        JOIN pedido_detalle d ON d.pedido_id = p.id
+        JOIN productos pr ON pr.id = d.producto_id;
+
+  - id: gasto-por-cliente
+    type: sql
+    title: Los mejores clientes
+    difficulty: 3
+    dataset: tienda
+    ordered: true
+    prompt: >-
+      Muestra el nombre de cada cliente y cuánto ha gastado en total (la suma de
+      `cantidad * precio_unitario`), sin contar los pedidos cancelados. Ordena del cliente
+      que más gastó al que menos. Solo aparecen los clientes con al menos un pedido no
+      cancelado.
+    starterCode: ''
+    solution: |
+      SELECT c.nombre, SUM(d.cantidad * d.precio_unitario) AS total
+      FROM clientes c
+      JOIN pedidos p        ON p.cliente_id = c.id
+      JOIN pedido_detalle d ON d.pedido_id = p.id
+      WHERE p.estado <> 'cancelado'
+      GROUP BY c.id, c.nombre
+      ORDER BY total DESC;
+    hints:
+      - Une `clientes`, `pedidos` y `pedido_detalle`.
+      - Excluye los cancelados con `WHERE` antes de agrupar.
+      - Agrupa por `c.id, c.nombre` y ordena por el total en orden descendente.
+    mistakes:
+      - |
+        SELECT c.nombre, SUM(d.cantidad * d.precio_unitario) AS total
+        FROM clientes c
+        JOIN pedidos p ON p.cliente_id = c.id
+        JOIN pedido_detalle d ON d.pedido_id = p.id
+        GROUP BY c.id, c.nombre
+        ORDER BY total DESC;
+      - |
+        SELECT c.nombre, SUM(d.precio_unitario) AS total
+        FROM clientes c
+        JOIN pedidos p ON p.cliente_id = c.id
+        JOIN pedido_detalle d ON d.pedido_id = p.id
+        WHERE p.estado <> 'cancelado'
+        GROUP BY c.id, c.nombre
+        ORDER BY total DESC;
+
+  - id: producto-cartesiano
+    type: quiz
+    title: Olvidar la condición
+    difficulty: 2
+    prompt: 'Hay 8 clientes y 8 pedidos. ¿Cuántas filas devuelve `SELECT * FROM clientes, pedidos;`?'
+    options:
+      - '8'
+      - '16'
+      - '64'
+      - 'Da un error'
+    answer: 2
+    explanation: 'Sin condición de unión se obtiene el producto cartesiano: cada uno de los 8 clientes combinado con cada uno de los 8 pedidos, 8 × 8 = 64 filas.'

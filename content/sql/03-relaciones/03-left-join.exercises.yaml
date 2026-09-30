@@ -1,0 +1,115 @@
+exercises:
+  - id: clientes-sin-pedidos
+    type: sql
+    title: Clientes sin pedidos
+    difficulty: 2
+    dataset: tienda
+    prompt: Muestra el `nombre` de los clientes que nunca han hecho un pedido.
+    starterCode: |
+      SELECT c.nombre
+      FROM clientes c
+      JOIN pedidos p ON p.cliente_id = c.id;
+    solution: |
+      SELECT c.nombre
+      FROM clientes c
+      LEFT JOIN pedidos p ON p.cliente_id = c.id
+      WHERE p.id IS NULL;
+    hints:
+      - Con `JOIN`, los clientes sin pedidos desaparecen. Cámbialo por `LEFT JOIN`.
+      - Los clientes sin pareja tienen `NULL` en las columnas de `pedidos`.
+    mistakes:
+      - SELECT c.nombre FROM clientes c LEFT JOIN pedidos p ON p.cliente_id = c.id WHERE p.estado = 'cancelado';
+
+  - id: productos-sin-vender
+    type: sql
+    title: Productos que nadie ha pedido
+    difficulty: 2
+    dataset: tienda
+    prompt: Muestra el `nombre` de los productos que no aparecen en ningún pedido.
+    starterCode: ''
+    solution: |
+      SELECT pr.nombre
+      FROM productos pr
+      LEFT JOIN pedido_detalle d ON d.producto_id = pr.id
+      WHERE d.producto_id IS NULL;
+    hints:
+      - Qué productos aparecen en pedidos está en `pedido_detalle`.
+      - 'Usa el patrón `LEFT JOIN` + `IS NULL`.'
+    mistakes:
+      - SELECT pr.nombre FROM productos pr WHERE NOT pr.activo;
+
+  - id: pedidos-por-cliente-completo
+    type: sql
+    title: Reporte de todos los clientes
+    difficulty: 2
+    dataset: tienda
+    prompt: >-
+      Muestra el nombre de cada cliente y cuántos pedidos tiene, incluidos los clientes
+      sin pedidos (que deben aparecer con `0`).
+    starterCode: |
+      SELECT c.nombre, COUNT(*) AS pedidos
+      FROM clientes c
+      JOIN pedidos p ON p.cliente_id = c.id
+      GROUP BY c.id, c.nombre;
+    solution: |
+      SELECT c.nombre, COUNT(p.id) AS pedidos
+      FROM clientes c
+      LEFT JOIN pedidos p ON p.cliente_id = c.id
+      GROUP BY c.id, c.nombre;
+    hints:
+      - Cambia `JOIN` por `LEFT JOIN` para conservar a todos los clientes.
+      - '`COUNT(*)` contaría 1 para quien no tiene pedidos. Cuenta `p.id`, que es `NULL` en ese caso.'
+    mistakes:
+      - |
+        SELECT c.nombre, COUNT(*) AS pedidos
+        FROM clientes c
+        LEFT JOIN pedidos p ON p.cliente_id = c.id
+        GROUP BY c.id, c.nombre;
+
+  - id: unidades-por-producto
+    type: sql
+    title: Unidades pedidas por producto
+    difficulty: 3
+    dataset: tienda
+    ordered: true
+    prompt: >-
+      Muestra el nombre de cada producto y el total de unidades pedidas (la suma de
+      `cantidad` en todos los pedidos), mostrando `0` para los productos que nunca se han
+      pedido. Ordena de más a menos unidades y, en caso de empate, por nombre.
+    starterCode: ''
+    solution: |
+      SELECT pr.nombre, COALESCE(SUM(d.cantidad), 0) AS unidades
+      FROM productos pr
+      LEFT JOIN pedido_detalle d ON d.producto_id = pr.id
+      GROUP BY pr.id, pr.nombre
+      ORDER BY unidades DESC, pr.nombre;
+    hints:
+      - Parte de `productos` y usa `LEFT JOIN` con `pedido_detalle`.
+      - 'Para los productos sin pedidos, `SUM` devuelve `NULL`: usa `COALESCE(SUM(d.cantidad), 0)`.'
+      - Ordena por las unidades en orden descendente y luego por nombre.
+    mistakes:
+      - |
+        SELECT pr.nombre, SUM(d.cantidad) AS unidades
+        FROM productos pr
+        LEFT JOIN pedido_detalle d ON d.producto_id = pr.id
+        GROUP BY pr.id, pr.nombre
+        ORDER BY unidades DESC, pr.nombre;
+      - |
+        SELECT pr.nombre, SUM(d.cantidad) AS unidades
+        FROM productos pr
+        JOIN pedido_detalle d ON d.producto_id = pr.id
+        GROUP BY pr.id, pr.nombre
+        ORDER BY unidades DESC, pr.nombre;
+
+  - id: count-left-join
+    type: quiz
+    title: Contar con LEFT JOIN
+    difficulty: 3
+    prompt: 'Sofía no tiene pedidos. Con `FROM clientes c LEFT JOIN pedidos p ON p.cliente_id = c.id GROUP BY c.id`, ¿qué valen `COUNT(*)` y `COUNT(p.id)` para ella?'
+    options:
+      - '0 y 0'
+      - '1 y 0'
+      - '1 y 1'
+      - '0 y 1'
+    answer: 1
+    explanation: '`LEFT JOIN` genera una fila para Sofía con `NULL` en las columnas de `pedidos`. `COUNT(*)` cuenta esa fila (1); `COUNT(p.id)` ignora el `NULL` (0).'

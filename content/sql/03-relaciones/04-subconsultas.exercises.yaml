@@ -1,0 +1,91 @@
+exercises:
+  - id: sobre-el-promedio
+    type: sql
+    title: Más caros que el promedio
+    difficulty: 1
+    dataset: tienda
+    prompt: Muestra el `nombre` y el `precio` de los productos cuyo precio es mayor que el precio promedio de todos los productos. Calcula el promedio con una subconsulta.
+    starterCode: |
+      SELECT nombre, precio
+      FROM productos
+      WHERE precio > AVG(precio);
+    solution: |
+      SELECT nombre, precio
+      FROM productos
+      WHERE precio > (SELECT AVG(precio) FROM productos);
+    hints:
+      - Ejecuta el código inicial. ¿Por qué `WHERE` no acepta `AVG`?
+      - 'Escribe el cálculo del promedio como una consulta entre paréntesis: `(SELECT AVG(precio) FROM productos)`.'
+    mistakes:
+      - SELECT nombre, precio FROM productos WHERE precio > (SELECT MIN(precio) FROM productos);
+
+  - id: clientes-con-pendientes
+    type: sql
+    title: Clientes con pedidos pendientes
+    difficulty: 2
+    dataset: tienda
+    prompt: Muestra el `nombre` de los clientes que tienen al menos un pedido con estado `pendiente`. Usa `IN` con una subconsulta.
+    starterCode: ''
+    solution: |
+      SELECT nombre
+      FROM clientes
+      WHERE id IN (SELECT cliente_id FROM pedidos WHERE estado = 'pendiente');
+    hints:
+      - 'La subconsulta debe devolver los `cliente_id` de los pedidos pendientes.'
+      - Compara el `id` del cliente con esa lista usando `IN`.
+    mistakes:
+      - SELECT nombre FROM clientes WHERE id IN (SELECT id FROM pedidos WHERE estado = 'pendiente');
+      - SELECT nombre FROM clientes WHERE id IN (SELECT cliente_id FROM pedidos);
+
+  - id: mas-caro-por-categoria
+    type: sql
+    title: El más caro de cada categoría
+    difficulty: 3
+    dataset: tienda
+    prompt: >-
+      Muestra la `categoria`, el `nombre` y el `precio` del producto más caro de cada
+      categoría. Usa una subconsulta correlacionada.
+    starterCode: |
+      SELECT categoria, MAX(precio)
+      FROM productos
+      GROUP BY categoria;
+    solution: |
+      SELECT p.categoria, p.nombre, p.precio
+      FROM productos p
+      WHERE p.precio = (
+        SELECT MAX(p2.precio)
+        FROM productos p2
+        WHERE p2.categoria = p.categoria
+      );
+    hints:
+      - Con `GROUP BY` obtienes el precio máximo, pero no puedes mostrar el nombre del producto.
+      - Para cada producto `p`, compáralo con el máximo de su propia categoría.
+      - 'Usa otro alias para la subconsulta: `FROM productos p2 WHERE p2.categoria = p.categoria`.'
+    mistakes:
+      - SELECT categoria, nombre, precio FROM productos WHERE precio = (SELECT MAX(precio) FROM productos);
+
+  - id: subconsulta-varias-filas
+    type: quiz
+    title: Más de una fila
+    difficulty: 2
+    prompt: '¿Qué ocurre con `SELECT nombre FROM clientes WHERE id = (SELECT cliente_id FROM pedidos);`?'
+    options:
+      - Devuelve los clientes que tienen pedidos
+      - Devuelve solo el primer cliente
+      - Da un error, porque la subconsulta devuelve más de una fila y `=` espera un solo valor
+      - No devuelve filas
+    answer: 2
+    explanation: 'Con `=`, la subconsulta debe ser escalar (un solo valor). Para comparar contra una lista de valores, usa `IN`.'
+
+  - id: not-in-null
+    type: quiz
+    title: NOT IN y NULL
+    difficulty: 3
+    prompt: 'Si la subconsulta de `WHERE id NOT IN (subconsulta)` devuelve algún `NULL`, ¿qué pasa?'
+    options:
+      - Los NULL se ignoran
+      - No se devuelve ninguna fila
+      - Se produce un error
+      - Se devuelven todas las filas
+    answer: 1
+    explanation: 'Comparar con `NULL` da "desconocido", así que ninguna fila cumple `NOT IN`. Por eso, para buscar lo que falta, es más seguro `NOT EXISTS` o `LEFT JOIN … IS NULL`.'

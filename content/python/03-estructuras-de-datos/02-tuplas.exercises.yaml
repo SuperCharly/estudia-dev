@@ -1,0 +1,154 @@
+exercises:
+  - id: intercambiar
+    type: python
+    title: Intercambio en una línea
+    difficulty: 1
+    prompt: >-
+      Lee dos palabras (cada una con su propio `input()`) en las variables `a` y `b`.
+      Intercambia sus valores con desempaquetado, sin usar una variable auxiliar, y
+      muestra `a` y luego `b`, cada una en su línea.
+    stdin: ['izquierda', 'derecha']
+    starterCode: |
+      a = input()
+      b = input()
+    solution: |
+      a = input()
+      b = input()
+      a, b = b, a
+      print(a)
+      print(b)
+    hints:
+      - '`a, b = b, a` intercambia los valores en una sola línea.'
+    mistakes:
+      - |
+        a = input()
+        b = input()
+        print(b)
+        print(a)
+    tests: |
+      assert a == "derecha" and b == "izquierda", "Después del intercambio, `a` debe valer 'derecha' y `b`, 'izquierda'."
+      assert salida.splitlines()[-2:] == ["derecha", "izquierda"], "Muestra `a` y luego `b` después del intercambio."
+      assert "a,b=b,a" in codigo.replace(" ", ""), "Intercambia con desempaquetado: `a, b = b, a`."
+
+  - id: ranking
+    type: python
+    title: Tabla de posiciones
+    difficulty: 2
+    prompt: >-
+      Lee una línea con nombres separados por espacios (ya ordenados del primero al
+      último lugar) y muestra cada uno con su posición, empezando en 1: `1. Ana`,
+      `2. Luis`, etc. Usa `enumerate`.
+    stdin: ['Ana Luis Marta']
+    starterCode: |
+      nombres = input().split()
+    solution: |
+      nombres = input().split()
+      for posicion, nombre in enumerate(nombres, start=1):
+          print(f"{posicion}. {nombre}")
+    hints:
+      - '`enumerate(nombres, start=1)` entrega pares `(posición, nombre)` empezando en 1.'
+      - 'Desempaqueta el par en el `for`: `for posicion, nombre in ...`.'
+    mistakes:
+      - |
+        nombres = input().split()
+        for posicion, nombre in enumerate(nombres):
+            print(f"{posicion}. {nombre}")
+    tests: |
+      assert "enumerate" in codigo, "Resuelve el ejercicio con `enumerate`."
+      for linea in ["Ana Luis Marta", "Solo", "a b c d e"]:
+          nombres = linea.split()
+          esperado = [f"{i}. {n}" for i, n in enumerate(nombres, start=1)]
+          lineas = ejecutar_con([linea]).splitlines()[1:]
+          assert lineas == esperado, f"Con '{linea}' se esperaba {esperado} y se obtuvo {lineas}."
+
+  - id: boletas
+    type: python
+    title: Boletas de calificaciones
+    difficulty: 2
+    prompt: >-
+      Lee dos líneas: la primera con nombres y la segunda con sus calificaciones enteras,
+      en el mismo orden. Con `zip`, muestra cada estudiante con su calificación y si
+      aprobó (60 o más): `Ana: 90 (aprobado)` o `Luis: 55 (reprobado)`.
+    stdin: ['Ana Luis', '90 55']
+    starterCode: |
+      nombres = input().split()
+      notas = [int(x) for x in input().split()]
+    solution: |
+      nombres = input().split()
+      notas = [int(x) for x in input().split()]
+      for nombre, nota in zip(nombres, notas):
+          estado = "aprobado" if nota >= 60 else "reprobado"
+          print(f"{nombre}: {nota} ({estado})")
+    hints:
+      - '`for nombre, nota in zip(nombres, notas):` recorre ambas listas a la vez.'
+      - Usa la expresión condicional para elegir entre `aprobado` y `reprobado`.
+    mistakes:
+      - |
+        nombres = input().split()
+        notas = [int(x) for x in input().split()]
+        for nombre, nota in zip(nombres, notas):
+            estado = "aprobado" if nota > 60 else "reprobado"
+            print(f"{nombre}: {nota} ({estado})")
+    tests: |
+      casos = [(["Ana Luis", "90 55"], ["Ana: 90 (aprobado)", "Luis: 55 (reprobado)"]),
+               (["Marta Diego Sofía", "60 59 100"], ["Marta: 60 (aprobado)", "Diego: 59 (reprobado)", "Sofía: 100 (aprobado)"])]
+      for entradas, esperado in casos:
+          lineas = ejecutar_con(entradas).splitlines()[2:]
+          assert lineas == esperado, f"Con {entradas} se esperaba {esperado} y se obtuvo {lineas}."
+
+  - id: punto-mas-lejano
+    type: python
+    title: El punto más lejano
+    difficulty: 3
+    prompt: >-
+      Lee una línea de puntos con formato `x,y` separados por espacios (por ejemplo,
+      `1,2 3,4 -1,0`). Guarda cada punto como una tupla de enteros y muestra la tupla del
+      punto más lejano al origen (el que tiene mayor `x*x + y*y`). Si hay empate, el
+      primero que aparezca. Con el ejemplo se muestra `(3, 4)`.
+    stdin: ['1,2 3,4 -1,0']
+    starterCode: |
+      texto = input().split()
+    solution: |
+      texto = input().split()
+      puntos = []
+      for par in texto:
+          x, y = par.split(",")
+          puntos.append((int(x), int(y)))
+      lejano = puntos[0]
+      for x, y in puntos:
+          if x * x + y * y > lejano[0] ** 2 + lejano[1] ** 2:
+              lejano = (x, y)
+      print(lejano)
+    hints:
+      - '`"3,4".split(",")` devuelve `["3", "4"]`; desempaquétalo en `x, y`.'
+      - Convierte a enteros y guarda `(int(x), int(y))` en una lista.
+      - Recorre los puntos guardando el más lejano encontrado hasta el momento.
+    mistakes:
+      - |
+        texto = input().split()
+        print(tuple(int(v) for v in texto[-1].split(",")))
+      - |
+        texto = input().split()
+        puntos = []
+        for par in texto:
+            x, y = par.split(",")
+            puntos.append((int(x), int(y)))
+        print(max(puntos))
+    tests: |
+      casos = [("1,2 3,4 -1,0", "(3, 4)"), ("0,0", "(0, 0)"), ("-5,0 3,3 0,5", "(-5, 0)"), ("1,1 -2,-2 2,1", "(-2, -2)")]
+      for linea, esperado in casos:
+          obtenido = ultima_linea(ejecutar_con([linea]))
+          assert obtenido == esperado, f"Con '{linea}' se esperaba {esperado} y se mostró {obtenido}."
+
+  - id: tupla-inmutable
+    type: quiz
+    title: ¿Se puede modificar?
+    difficulty: 1
+    prompt: '¿Qué ocurre al ejecutar `punto = (3, 4)` y luego `punto[0] = 10`?'
+    options:
+      - '`punto` pasa a ser `(10, 4)`'
+      - 'Se produce un `TypeError`, porque las tuplas son inmutables'
+      - 'Se crea una tupla nueva'
+      - 'No pasa nada'
+    answer: 1
+    explanation: 'Las tuplas no se pueden modificar después de crearlas. Si necesitas cambiar elementos, usa una lista.'

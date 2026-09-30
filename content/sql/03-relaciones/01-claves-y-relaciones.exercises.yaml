@@ -1,0 +1,81 @@
+exercises:
+  - id: pedidos-del-cliente
+    type: sql
+    title: Pedidos de un cliente
+    difficulty: 1
+    dataset: tienda
+    prompt: Muestra el `id`, la `fecha` y el `estado` de todos los pedidos del cliente cuyo `id` es 1.
+    starterCode: |
+      -- Escribe tu consulta aquí
+    solution: |
+      SELECT id, fecha, estado
+      FROM pedidos
+      WHERE cliente_id = 1;
+    hints:
+      - La tabla `pedidos` tiene una columna `cliente_id` con el `id` del cliente.
+    mistakes:
+      - SELECT id, fecha, estado FROM pedidos WHERE id = 1;
+
+  - id: contenido-del-pedido
+    type: sql
+    title: ¿Qué incluye el pedido?
+    difficulty: 1
+    dataset: tienda
+    prompt: Muestra el `producto_id` y la `cantidad` de cada producto incluido en el pedido 3.
+    starterCode: ''
+    solution: |
+      SELECT producto_id, cantidad
+      FROM pedido_detalle
+      WHERE pedido_id = 3;
+    hints:
+      - Qué producto va en qué pedido se guarda en la tabla intermedia `pedido_detalle`.
+    mistakes:
+      - SELECT producto_id, cantidad FROM pedido_detalle WHERE producto_id = 3;
+
+  - id: total-por-pedido
+    type: sql
+    title: Total de cada pedido
+    difficulty: 2
+    dataset: tienda
+    ordered: true
+    prompt: >-
+      Usando `pedido_detalle`, muestra el `pedido_id` y el total de cada pedido (la suma de
+      `cantidad * precio_unitario` de sus productos), ordenados por `pedido_id`.
+    starterCode: ''
+    solution: |
+      SELECT pedido_id, SUM(cantidad * precio_unitario) AS total
+      FROM pedido_detalle
+      GROUP BY pedido_id
+      ORDER BY pedido_id;
+    hints:
+      - Agrupa por `pedido_id`.
+      - Dentro de `SUM` puedes multiplicar columnas.
+    mistakes:
+      - SELECT pedido_id, SUM(precio_unitario) AS total FROM pedido_detalle GROUP BY pedido_id ORDER BY pedido_id;
+      - SELECT pedido_id, SUM(cantidad) * SUM(precio_unitario) AS total FROM pedido_detalle GROUP BY pedido_id ORDER BY pedido_id;
+
+  - id: integridad
+    type: quiz
+    title: Integridad referencial
+    difficulty: 1
+    prompt: '`pedidos.cliente_id` es una clave foránea hacia `clientes.id`. ¿Qué ocurre si intentas crear un pedido con `cliente_id = 99` y no existe el cliente 99?'
+    options:
+      - Se crea el pedido y el cliente 99 automáticamente
+      - PostgreSQL rechaza la operación con un error
+      - Se crea el pedido con `cliente_id` en `NULL`
+      - Se crea el pedido sin problemas
+    answer: 1
+    explanation: 'La clave foránea garantiza que cada `cliente_id` exista en `clientes`. Cualquier valor que no exista se rechaza.'
+
+  - id: muchos-a-muchos
+    type: quiz
+    title: Muchos a muchos
+    difficulty: 2
+    prompt: '¿Cómo se representa la relación entre `pedidos` y `productos`, donde un pedido tiene varios productos y un producto aparece en varios pedidos?'
+    options:
+      - Con una columna `producto_id` en `pedidos`
+      - Con una columna `pedido_id` en `productos`
+      - Con una tabla intermedia (`pedido_detalle`) con claves foráneas hacia ambas tablas
+      - No se puede representar en una base de datos relacional
+    answer: 2
+    explanation: 'Una columna solo puede guardar un valor por fila, así que una relación muchos a muchos necesita una tabla intermedia con una clave foránea hacia cada lado.'
