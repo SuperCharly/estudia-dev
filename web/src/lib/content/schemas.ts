@@ -136,6 +136,11 @@ const codeExercise = {
   starterCode: z.string().default(''),
   solution: z.string().min(1),
   hints: z.array(z.string().min(1)).default([]),
+  /**
+   * Soluciones incorrectas típicas. No se muestran al estudiante: el test de contenido
+   * verifica que las pruebas del ejercicio las rechacen.
+   */
+  mistakes: z.array(z.string().min(1)).default([]),
 };
 
 export const pythonExerciseSchema = z.object({
@@ -143,8 +148,9 @@ export const pythonExerciseSchema = z.object({
   type: z.literal('python'),
   /**
    * Código Python con `assert` que valida el ejercicio. Tiene acceso a las variables
-   * y funciones del estudiante, a `salida` (texto impreso), a `codigo` (su código fuente)
-   * y a `capturar_salida(f, ...)`.
+   * y funciones del estudiante, a `salida` (texto impreso), a `codigo` (su código fuente),
+   * a `capturar_salida(f, ...)`, a `ejecutar_con([entradas])` (vuelve a ejecutar el programa
+   * con otras entradas y devuelve lo impreso) y a `ultima_linea(texto)`.
    */
   tests: z.string().min(1),
   /** Líneas que devolverá `input()`, en orden. */
@@ -194,6 +200,11 @@ export type PythonExercise = z.infer<typeof pythonExerciseSchema>;
 export type SqlExercise = z.infer<typeof sqlExerciseSchema>;
 export type QuizExercise = z.infer<typeof quizExerciseSchema>;
 export type ManualExercise = z.infer<typeof manualExerciseSchema>;
+
+/** Datos del ejercicio que se envían al navegador (sin campos internos de verificación). */
+export function toClientExercise(exercise: Exercise): Exercise {
+  return 'mistakes' in exercise ? { ...exercise, mistakes: [] } : exercise;
+}
 
 export const exerciseFileSchema = z
   .object({ exercises: z.array(exerciseSchema).min(1) })

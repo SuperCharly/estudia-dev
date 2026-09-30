@@ -80,6 +80,36 @@ describe('createPythonRunner', () => {
     expect(result.message).toContain('NameError');
   });
 
+  it('ejecutar_con prueba el programa con otras entradas', () => {
+    const code = 'n = int(input())\nprint("par" if n % 2 == 0 else "impar")';
+    // Como en una terminal, lo "tecleado" en input() aparece en la salida.
+    const tests = [
+      'assert ejecutar_con(["4"]) == "4\\npar\\n"',
+      'assert ultima_linea(ejecutar_con(["7"])) == "impar"',
+      'assert salida == "3\\nimpar\\n"',
+    ].join('\n');
+    expect(run(request({ code, tests, stdin: ['3'] })).status).toBe('pass');
+  });
+
+  it('ejecutar_con detecta respuestas escritas "a mano"', () => {
+    const tests = 'assert ultima_linea(ejecutar_con(["4"])) == "par", "Falla con 4"';
+    const result = run(request({ code: 'input()\nprint("impar")', tests, stdin: ['3'] }));
+    expect(result).toMatchObject({ status: 'fail', message: 'Falla con 4' });
+  });
+
+  it('ejecutar_con no altera la salida original ni el espacio de nombres', () => {
+    const tests = ['ejecutar_con(["9"])', 'assert salida == "1\\n1\\n"', 'assert x == 1'].join('\n');
+    const result = run(request({ code: 'x = int(input())\nprint(x)', tests, stdin: ['1'] }));
+    expect(result.status).toBe('pass');
+  });
+
+  it('ultima_linea ignora líneas vacías', () => {
+    const result = run(
+      request({ code: 'print("a")\nprint("b")\nprint()', tests: 'assert ultima_linea(salida) == "b"' }),
+    );
+    expect(result.status).toBe('pass');
+  });
+
   it('aísla cada ejecución: no se filtran variables entre intentos', () => {
     run(request({ mode: 'run', code: 'secreto = 123' }));
     const result = run(request({ code: '', tests: 'assert "secreto" not in globals()' }));

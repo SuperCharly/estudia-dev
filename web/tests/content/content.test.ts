@@ -78,7 +78,7 @@ describe.skipIf(pythonExercises.length === 0)('ejercicios de Python', () => {
     run = createPythonRunner(await loadPyodide());
   });
 
-  it.each(pythonExercises)('$name: la solución pasa y el código inicial no', ({ exercise }) => {
+  it.each(pythonExercises)('$name: la solución pasa; el código inicial y los errores típicos no', ({ exercise }) => {
     const base = { language: 'python', mode: 'grade', tests: exercise.tests, stdin: exercise.stdin } as const;
 
     const solution = run({ ...base, code: exercise.solution });
@@ -87,6 +87,11 @@ describe.skipIf(pythonExercises.length === 0)('ejercicios de Python', () => {
 
     const starter = run({ ...base, code: exercise.starterCode });
     expect(starter.status).not.toBe('pass');
+
+    exercise.mistakes.forEach((mistake, i) => {
+      const result = run({ ...base, code: mistake });
+      expect(result.status, `El error típico #${i + 1} debería ser rechazado`).not.toBe('pass');
+    });
   });
 });
 
@@ -94,7 +99,7 @@ describe.skipIf(sqlExercises.length === 0)('ejercicios de SQL', () => {
   const sandbox = new SqlSandbox(createPgliteDatabase);
   afterAll(() => sandbox.close());
 
-  it.each(sqlExercises)('$name: la solución devuelve datos y el código inicial no pasa', async ({ exercise }) => {
+  it.each(sqlExercises)('$name: la solución pasa; el código inicial y los errores típicos no', async ({ exercise }) => {
     const dataset = content.datasets.get(exercise.dataset)!;
     const base = {
       language: 'sql',
@@ -111,5 +116,10 @@ describe.skipIf(sqlExercises.length === 0)('ejercicios de SQL', () => {
 
     const starter = await runSql({ ...base, code: exercise.starterCode }, sandbox);
     expect(starter.status).not.toBe('pass');
+
+    for (const [i, mistake] of exercise.mistakes.entries()) {
+      const result = await runSql({ ...base, code: mistake }, sandbox);
+      expect(result.status, `El error típico #${i + 1} debería ser rechazado`).not.toBe('pass');
+    }
   });
 });

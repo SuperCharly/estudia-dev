@@ -1,0 +1,93 @@
+exercises:
+  - id: categorias-grandes
+    type: sql
+    title: Categorías con muchos productos
+    difficulty: 1
+    dataset: tienda
+    prompt: Muestra la `categoria` y la cantidad de productos de las categorías que tienen más de 2 productos.
+    starterCode: |
+      SELECT categoria, COUNT(*) AS productos
+      FROM productos
+      GROUP BY categoria;
+    solution: |
+      SELECT categoria, COUNT(*) AS productos
+      FROM productos
+      GROUP BY categoria
+      HAVING COUNT(*) > 2;
+    hints:
+      - Agrega `HAVING` después de `GROUP BY`.
+      - '`HAVING COUNT(*) > 2` conserva solo los grupos con más de 2 filas.'
+
+  - id: categorias-caras
+    type: sql
+    title: Categorías de precio alto
+    difficulty: 2
+    dataset: tienda
+    prompt: >-
+      Muestra la `categoria` y su precio promedio redondeado a 2 decimales, solo para las
+      categorías cuyo precio promedio sea mayor que 300.
+    starterCode: |
+      SELECT categoria, ROUND(AVG(precio), 2) AS promedio
+      FROM productos
+      WHERE AVG(precio) > 300
+      GROUP BY categoria;
+    solution: |
+      SELECT categoria, ROUND(AVG(precio), 2) AS promedio
+      FROM productos
+      GROUP BY categoria
+      HAVING AVG(precio) > 300;
+    hints:
+      - Ejecuta el código inicial y lee el error.
+      - Una condición sobre `AVG` debe ir en `HAVING`, después de `GROUP BY`.
+
+  - id: activos-por-categoria
+    type: sql
+    title: Categorías con oferta activa
+    difficulty: 3
+    dataset: tienda
+    ordered: true
+    prompt: >-
+      Muestra la `categoria` y cuántos productos activos tiene, solo para las categorías
+      con al menos 2 productos activos. Ordena de la categoría con más productos activos a
+      la que tiene menos y, en caso de empate, por nombre de categoría.
+    starterCode: ''
+    solution: |
+      SELECT categoria, COUNT(*) AS activos
+      FROM productos
+      WHERE activo
+      GROUP BY categoria
+      HAVING COUNT(*) >= 2
+      ORDER BY activos DESC, categoria;
+    hints:
+      - Necesitas `WHERE` (para los productos activos) y `HAVING` (para el mínimo de 2).
+      - 'Orden de las cláusulas: `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`.'
+      - En PostgreSQL, `HAVING` no acepta alias; repite `COUNT(*)`.
+    mistakes:
+      - SELECT categoria, COUNT(*) AS activos FROM productos GROUP BY categoria HAVING COUNT(*) >= 2 ORDER BY activos DESC, categoria;
+      - SELECT categoria, COUNT(*) AS activos FROM productos WHERE activo GROUP BY categoria HAVING COUNT(*) > 2 ORDER BY activos DESC, categoria;
+
+  - id: where-o-having
+    type: quiz
+    title: ¿WHERE o HAVING?
+    difficulty: 2
+    prompt: 'Quieres contar los productos de cada categoría cuyo precio sea mayor que 100. ¿Dónde va la condición `precio > 100`?'
+    options:
+      - En `WHERE`, porque filtra productos individuales antes de agrupar
+      - En `HAVING`, porque la consulta usa `GROUP BY`
+      - En `ORDER BY`
+      - Da igual, el resultado es el mismo
+    answer: 0
+    explanation: 'La condición es sobre cada producto, no sobre un resumen del grupo, así que va en `WHERE`. `HAVING` es para condiciones sobre agregaciones como `COUNT(*)` o `AVG(precio)`.'
+
+  - id: orden-logico
+    type: quiz
+    title: Orden de evaluación
+    difficulty: 3
+    prompt: '¿Por qué `WHERE COUNT(*) > 2` produce un error?'
+    options:
+      - Porque `COUNT` solo funciona en el `SELECT`
+      - Porque `WHERE` se evalúa antes de formar los grupos, cuando `COUNT(*)` aún no existe
+      - Porque falta un alias
+      - Porque `COUNT(*)` debe escribirse en minúsculas
+    answer: 1
+    explanation: 'El orden lógico es `FROM` → `WHERE` → `GROUP BY` → `HAVING` → `SELECT`. Cuando se evalúa `WHERE` todavía no hay grupos que contar.'

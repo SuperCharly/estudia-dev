@@ -11,7 +11,7 @@ import Layout from '../../../layouts/Layout.astro';
 import { required } from '../../../lib/assert';
 import { findNeighbors, parseLessonId } from '../../../lib/content/outline';
 import { getExercisesByLesson, getTrackOutlines } from '../../../lib/content/queries';
-import { canAdapt } from '../../../lib/content/schemas';
+import { canAdapt, toClientExercise } from '../../../lib/content/schemas';
 import { exerciseItemId, lessonReadItemId } from '../../../lib/progress/model';
 
 export const getStaticPaths = (async () => {
@@ -117,7 +117,7 @@ const books = await Promise.all(
             <Exercise
               client:visible
               itemId={exerciseItemId(lesson.id, exercise.id)}
-              exercise={exercise}
+              exercise={toClientExercise(exercise)}
               dataset={exercise.type === 'sql' ? datasets.get(exercise.dataset) : undefined}
             />
           </div>

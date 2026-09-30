@@ -1,0 +1,103 @@
+exercises:
+  - id: contar-productos
+    type: sql
+    title: ¿Cuántos productos hay?
+    difficulty: 1
+    dataset: tienda
+    prompt: Muestra cuántos productos hay en total en la tabla `productos`.
+    starterCode: |
+      -- Escribe tu consulta aquí
+    solution: |
+      SELECT COUNT(*) AS total_productos
+      FROM productos;
+    hints:
+      - '`COUNT(*)` cuenta todas las filas.'
+
+  - id: stock-activo
+    type: sql
+    title: Unidades disponibles
+    difficulty: 1
+    dataset: tienda
+    prompt: Muestra la suma del `stock` de los productos de la categoría `Electrónica`.
+    starterCode: |
+      SELECT SUM(stock)
+      FROM productos;
+    solution: |
+      SELECT SUM(stock) AS unidades
+      FROM productos
+      WHERE categoria = 'Electrónica';
+    hints:
+      - Filtra primero con `WHERE` y luego suma.
+      - 'El texto va entre comillas simples: `''Electrónica''`.'
+
+  - id: resumen-precios
+    type: sql
+    title: Resumen de precios
+    difficulty: 2
+    dataset: tienda
+    prompt: >-
+      Muestra, en este orden, el precio mínimo, el precio máximo y el precio promedio de
+      todos los productos. Redondea el promedio a 2 decimales.
+    starterCode: ''
+    solution: |
+      SELECT MIN(precio) AS minimo,
+             MAX(precio) AS maximo,
+             ROUND(AVG(precio), 2) AS promedio
+      FROM productos;
+    hints:
+      - Puedes usar varias funciones de agregación en el mismo `SELECT`, separadas por comas.
+      - '`ROUND(AVG(precio), 2)` redondea el promedio a dos decimales.'
+    mistakes:
+      - SELECT MIN(precio), MAX(precio), AVG(precio) FROM productos;
+      - SELECT MIN(precio), MAX(precio), ROUND(SUM(precio) / 12) FROM productos;
+
+  - id: ciudades-distintas
+    type: sql
+    title: Ciudades con clientes
+    difficulty: 2
+    dataset: tienda
+    prompt: Muestra en cuántas ciudades distintas hay clientes registrados (sin contar a quienes no tienen ciudad).
+    starterCode: |
+      SELECT COUNT(ciudad)
+      FROM clientes;
+    solution: |
+      SELECT COUNT(DISTINCT ciudad) AS ciudades
+      FROM clientes;
+    hints:
+      - Ejecuta el código inicial. ¿Por qué el número es mayor que la cantidad real de ciudades?
+      - '`COUNT(DISTINCT columna)` cuenta solo los valores diferentes y ya ignora los `NULL`.'
+
+  - id: valor-inventario-total
+    type: sql
+    title: Valor total del inventario
+    difficulty: 3
+    dataset: tienda
+    prompt: >-
+      Calcula el valor del inventario de los productos que cuestan menos de 500: la suma
+      de `precio * stock` de cada uno. Muestra una sola columna llamada `valor_total`.
+    starterCode: ''
+    solution: |
+      SELECT SUM(precio * stock) AS valor_total
+      FROM productos
+      WHERE precio < 500;
+    hints:
+      - Dentro de `SUM` puedes escribir una expresión, no solo una columna.
+      - No olvides filtrar por precio con `WHERE`.
+    mistakes:
+      - SELECT SUM(precio * stock) AS valor_total FROM productos;
+      - SELECT SUM(precio) * SUM(stock) AS valor_total FROM productos WHERE precio < 500;
+
+  - id: count-y-null
+    type: quiz
+    title: COUNT y NULL
+    difficulty: 2
+    prompt: >-
+      La tabla `clientes` tiene 8 filas y solo un cliente no tiene email (su `email` es
+      `NULL`). ¿Qué devuelve `SELECT COUNT(*), COUNT(email) FROM clientes;`?
+    options:
+      - '8 y 8'
+      - '8 y 7'
+      - '7 y 7'
+      - '7 y 8'
+    answer: 1
+    explanation: '`COUNT(*)` cuenta todas las filas (8); `COUNT(email)` ignora los `NULL`, así que cuenta 7.'

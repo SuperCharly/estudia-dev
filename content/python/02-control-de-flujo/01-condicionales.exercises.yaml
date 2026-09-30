@@ -1,0 +1,174 @@
+exercises:
+  - id: par-o-impar
+    type: python
+    title: ¿Par o impar?
+    difficulty: 1
+    prompt: >-
+      Lee un número entero con `input()` y muestra `par` si es par o `impar` si no lo es.
+      Tu programa se probará con varios números.
+    stdin: ['7']
+    starterCode: |
+      numero = int(input())
+    solution: |
+      numero = int(input())
+      if numero % 2 == 0:
+          print("par")
+      else:
+          print("impar")
+    hints:
+      - Un número es par si `numero % 2 == 0`.
+      - 'Usa `if` y `else`. No olvides los dos puntos y la indentación.'
+    mistakes:
+      - |
+        numero = int(input())
+        print("impar")
+      - |
+        numero = int(input())
+        if numero % 2 == 1:
+            print("par")
+        else:
+            print("impar")
+    tests: |
+      for entrada, esperado in [("7", "impar"), ("10", "par"), ("0", "par"), ("-3", "impar")]:
+          obtenido = ultima_linea(ejecutar_con([entrada]))
+          assert obtenido == esperado, f"Con {entrada} se esperaba '{esperado}' y se mostró '{obtenido}'."
+
+  - id: semaforo
+    type: python
+    title: Semáforo
+    difficulty: 2
+    prompt: >-
+      Lee el color de un semáforo (`verde`, `amarillo` o `rojo`) y muestra la acción:
+      `avanza`, `precaución` o `detente`. Si el color es otro, muestra `color inválido`.
+    stdin: ['rojo']
+    starterCode: |
+      color = input()
+    solution: |
+      color = input()
+      if color == "verde":
+          print("avanza")
+      elif color == "amarillo":
+          print("precaución")
+      elif color == "rojo":
+          print("detente")
+      else:
+          print("color inválido")
+    hints:
+      - Usa `if`, varios `elif` y un `else` final.
+      - 'Compara textos con `==`: `color == "verde"`.'
+    tests: |
+      casos = [("verde", "avanza"), ("amarillo", "precaución"), ("rojo", "detente"), ("azul", "color inválido")]
+      for entrada, esperado in casos:
+          obtenido = ultima_linea(ejecutar_con([entrada]))
+          assert obtenido == esperado, f"Con '{entrada}' se esperaba '{esperado}' y se mostró '{obtenido}'."
+
+  - id: calificacion-letra
+    type: python
+    title: Calificación con letra
+    difficulty: 2
+    prompt: >-
+      Lee una calificación entera (0 a 100) y muestra su letra: `A` (90 o más), `B` (80 a
+      89), `C` (70 a 79), `D` (60 a 69) o `F` (menos de 60).
+    stdin: ['85']
+    starterCode: |
+      nota = int(input())
+      if nota >= 60:
+          print("D")
+      elif nota >= 90:
+          print("A")
+    solution: |
+      nota = int(input())
+      if nota >= 90:
+          print("A")
+      elif nota >= 80:
+          print("B")
+      elif nota >= 70:
+          print("C")
+      elif nota >= 60:
+          print("D")
+      else:
+          print("F")
+    hints:
+      - Ejecuta el código inicial con 95. ¿Por qué muestra `D`?
+      - Solo se ejecuta el primer bloque cuya condición se cumple, así que ordena de la nota más alta a la más baja.
+    mistakes:
+      - |
+        nota = int(input())
+        if nota > 90:
+            print("A")
+        elif nota > 80:
+            print("B")
+        elif nota > 70:
+            print("C")
+        elif nota > 60:
+            print("D")
+        else:
+            print("F")
+    tests: |
+      casos = [("100", "A"), ("90", "A"), ("89", "B"), ("80", "B"), ("75", "C"), ("60", "D"), ("59", "F"), ("0", "F")]
+      for entrada, esperado in casos:
+          obtenido = ultima_linea(ejecutar_con([entrada]))
+          assert obtenido == esperado, f"Con {entrada} se esperaba '{esperado}' y se mostró '{obtenido}'."
+
+  - id: anio-bisiesto
+    type: python
+    title: Año bisiesto
+    difficulty: 3
+    prompt: >-
+      Lee un año y muestra `bisiesto` o `no bisiesto`. Un año es bisiesto si es divisible
+      entre 4, excepto los divisibles entre 100, que solo lo son si también son divisibles
+      entre 400 (2000 fue bisiesto; 1900 no).
+    stdin: ['2024']
+    starterCode: |
+      anio = int(input())
+    solution: |
+      anio = int(input())
+      if (anio % 4 == 0 and anio % 100 != 0) or anio % 400 == 0:
+          print("bisiesto")
+      else:
+          print("no bisiesto")
+    hints:
+      - '"Divisible entre 4" se escribe `anio % 4 == 0`.'
+      - Hay dos formas de ser bisiesto; combínalas con `or`.
+      - 'Una de ellas: divisible entre 4 `and` no divisible entre 100.'
+    mistakes:
+      - |
+        anio = int(input())
+        print("bisiesto" if anio % 4 == 0 else "no bisiesto")
+      - |
+        anio = int(input())
+        if anio % 4 == 0 and anio % 100 != 0:
+            print("bisiesto")
+        else:
+            print("no bisiesto")
+    tests: |
+      casos = [("2024", "bisiesto"), ("2023", "no bisiesto"), ("2000", "bisiesto"), ("1900", "no bisiesto"), ("2100", "no bisiesto"), ("2400", "bisiesto")]
+      for entrada, esperado in casos:
+          obtenido = ultima_linea(ejecutar_con([entrada]))
+          assert obtenido == esperado, f"Con {entrada} se esperaba '{esperado}' y se mostró '{obtenido}'."
+
+  - id: valor-de-verdad
+    type: quiz
+    title: Valores falsos
+    difficulty: 2
+    prompt: '¿Cuál de estos valores hace que `if valor:` ejecute su bloque?'
+    options:
+      - '0'
+      - '""'
+      - '"0"'
+      - 'None'
+    answer: 2
+    explanation: '`"0"` es una cadena con un carácter, así que no está vacía y se considera verdadera. `0`, `""` y `None` se consideran falsos.'
+
+  - id: orden-elif
+    type: quiz
+    title: El primer bloque gana
+    difficulty: 1
+    prompt: 'Si `x = 15`, ¿qué muestra `if x > 5: print("A")` seguido de `elif x > 10: print("B")`?'
+    options:
+      - A
+      - B
+      - A y B
+      - Nada
+    answer: 0
+    explanation: 'Python ejecuta solo el primer bloque cuya condición se cumple. Como `15 > 5`, muestra `A` y ya no evalúa el `elif`.'

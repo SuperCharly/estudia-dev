@@ -26,6 +26,27 @@ def _format_user_error(error):
     return f"{message} (línea {line})" if line else message
 
 
+def _make_input(output, lines):
+    """Crea un `input()` simulado que lee de `lines` y muestra lo "tecleado" en `output`."""
+    pending = list(lines)
+
+    def fake_input(prompt=""):
+        output.write(str(prompt))
+        if not pending:
+            raise EOFError("El ejercicio no proporciona más datos para input().")
+        value = pending.pop(0)
+        output.write(value + "\n")
+        return value
+
+    return fake_input
+
+
+def _last_line(text):
+    """Última línea no vacía de un texto impreso ("" si no hay ninguna)."""
+    lines = [line for line in text.splitlines() if line.strip()]
+    return lines[-1] if lines else ""
+
+
 def run_exercise(user_code, test_code, stdin_lines, mode):
     """Ejecuta `user_code` y, si `mode == "grade"`, las pruebas.
 
@@ -35,15 +56,22 @@ def run_exercise(user_code, test_code, stdin_lines, mode):
       message: explicación para el estudiante
     """
     output = io.StringIO()
-    pending_input = list(stdin_lines)
+    fake_input = _make_input(output, stdin_lines)
 
-    def fake_input(prompt=""):
-        output.write(str(prompt))
-        if not pending_input:
-            raise EOFError("El ejercicio no proporciona más datos para input().")
-        value = pending_input.pop(0)
-        output.write(value + "\n")
-        return value
+    def ejecutar_con(entradas):
+        """Vuelve a ejecutar el código del estudiante con otras entradas y devuelve lo que imprimió.
+
+        Permite probar un programa con varios casos (no solo con el `stdin` del ejercicio).
+        """
+        buffer = io.StringIO()
+        previous = sys.stdout
+        sys.stdout = buffer
+        try:
+            namespace = {"__name__": "__main__", "input": _make_input(buffer, entradas)}
+            exec(compile(user_code, USER_FILENAME, "exec"), namespace)
+        finally:
+            sys.stdout = previous
+        return buffer.getvalue()
 
     def capturar_salida(func, *args, **kwargs):
         """Ejecuta `func` y devuelve el texto que imprimió (para usar en las pruebas)."""
@@ -72,6 +100,8 @@ def run_exercise(user_code, test_code, stdin_lines, mode):
         namespace["salida"] = stdout
         namespace["codigo"] = user_code
         namespace["capturar_salida"] = capturar_salida
+        namespace["ejecutar_con"] = ejecutar_con
+        namespace["ultima_linea"] = _last_line
         try:
             exec(compile(test_code, TESTS_FILENAME, "exec"), namespace)
         except AssertionError as error:

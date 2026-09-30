@@ -1,0 +1,190 @@
+exercises:
+  - id: tabla-de-multiplicar
+    type: python
+    title: Tabla de multiplicar
+    difficulty: 1
+    prompt: >-
+      Lee un número `n` y muestra su tabla de multiplicar del 1 al 10 con el formato
+      `n x i = resultado` (por ejemplo, `7 x 3 = 21`).
+    stdin: ['7']
+    starterCode: |
+      n = int(input())
+    solution: |
+      n = int(input())
+      for i in range(1, 11):
+          print(f"{n} x {i} = {n * i}")
+    hints:
+      - '`range(1, 11)` genera los números del 1 al 10.'
+      - 'Usa una f-string: `f"{n} x {i} = {n * i}"`.'
+    tests: |
+      for n in [7, 1, 12]:
+          lineas = ejecutar_con([str(n)]).splitlines()[1:]
+          esperado = [f"{n} x {i} = {n * i}" for i in range(1, 11)]
+          assert lineas == esperado, f"Con {n}, la tabla no es correcta. Primera línea esperada: '{esperado[0]}'."
+
+  - id: suma-de-pares
+    type: python
+    title: Suma de pares
+    difficulty: 2
+    prompt: >-
+      Lee un número `n` y muestra la suma de todos los números pares entre 1 y `n`
+      (incluido `n`). Con `10` debe mostrar `30` (2 + 4 + 6 + 8 + 10).
+    stdin: ['10']
+    starterCode: |
+      n = int(input())
+      total = 0
+    solution: |
+      n = int(input())
+      total = 0
+      for numero in range(2, n + 1, 2):
+          total += numero
+      print(total)
+    hints:
+      - '`range` acepta un tercer argumento: el paso. `range(2, n + 1, 2)` genera los pares.'
+      - Recuerda que el final de `range` no se incluye; por eso `n + 1`.
+    mistakes:
+      - |
+        n = int(input())
+        total = 0
+        for numero in range(2, n, 2):
+            total += numero
+        print(total)
+    tests: |
+      for n, esperado in [(10, 30), (1, 0), (7, 12), (100, 2550)]:
+          obtenido = ultima_linea(ejecutar_con([str(n)]))
+          assert obtenido == str(esperado), f"Con {n} se esperaba {esperado} y se mostró '{obtenido}'."
+
+  - id: contar-vocales
+    type: python
+    title: Contar vocales
+    difficulty: 2
+    prompt: >-
+      Lee una frase y muestra cuántas vocales tiene (`a`, `e`, `i`, `o`, `u`, sin
+      importar mayúsculas ni acentos: también cuentan `á`, `é`, `í`, `ó`, `ú`).
+    stdin: ['Hola Mundo']
+    starterCode: |
+      frase = input()
+      vocales = 0
+    solution: |
+      frase = input()
+      vocales = 0
+      for letra in frase.lower():
+          if letra in "aeiouáéíóú":
+              vocales += 1
+      print(vocales)
+    hints:
+      - Recorre la frase letra por letra con `for`.
+      - '`frase.lower()` convierte todo a minúsculas.'
+      - '`letra in "aeiouáéíóú"` indica si la letra es una vocal.'
+    mistakes:
+      - |
+        frase = input()
+        vocales = 0
+        for letra in frase:
+            if letra in "aeiou":
+                vocales += 1
+        print(vocales)
+    tests: |
+      for frase, esperado in [("Hola Mundo", 4), ("PYTHON", 1), ("Canción de árbol", 6), ("xyz", 0)]:
+          obtenido = ultima_linea(ejecutar_con([frase]))
+          assert obtenido == str(esperado), f"Con '{frase}' se esperaban {esperado} vocales y se mostró '{obtenido}'."
+
+  - id: fizzbuzz
+    type: python
+    title: FizzBuzz
+    difficulty: 3
+    prompt: >-
+      Muestra los números del 1 al `n` (leído con `input()`), uno por línea, pero en lugar
+      de los múltiplos de 3 muestra `Fizz`, en lugar de los múltiplos de 5 muestra `Buzz` y
+      en lugar de los múltiplos de ambos muestra `FizzBuzz`.
+    stdin: ['15']
+    starterCode: |
+      n = int(input())
+    solution: |
+      n = int(input())
+      for i in range(1, n + 1):
+          if i % 15 == 0:
+              print("FizzBuzz")
+          elif i % 3 == 0:
+              print("Fizz")
+          elif i % 5 == 0:
+              print("Buzz")
+          else:
+              print(i)
+    hints:
+      - Un número es múltiplo de 3 si `i % 3 == 0`.
+      - 'El orden de las condiciones importa: ¿qué pasa con 15 si revisas primero el 3?'
+      - Un múltiplo de 3 y de 5 es múltiplo de 15.
+    mistakes:
+      - |
+        n = int(input())
+        for i in range(1, n + 1):
+            if i % 3 == 0:
+                print("Fizz")
+            elif i % 5 == 0:
+                print("Buzz")
+            elif i % 15 == 0:
+                print("FizzBuzz")
+            else:
+                print(i)
+      - |
+        n = int(input())
+        for i in range(1, n):
+            if i % 15 == 0:
+                print("FizzBuzz")
+            elif i % 3 == 0:
+                print("Fizz")
+            elif i % 5 == 0:
+                print("Buzz")
+            else:
+                print(i)
+    tests: |
+      def esperado(n):
+          return ["FizzBuzz" if i % 15 == 0 else "Fizz" if i % 3 == 0 else "Buzz" if i % 5 == 0 else str(i) for i in range(1, n + 1)]
+      for n in [15, 5, 31]:
+          lineas = ejecutar_con([str(n)]).splitlines()[1:]
+          assert len(lineas) == n, f"Con {n} se esperaban {n} líneas y se mostraron {len(lineas)}."
+          for i, (obtenida, correcta) in enumerate(zip(lineas, esperado(n)), start=1):
+              assert obtenida == correcta, f"En el número {i} se esperaba '{correcta}' y se mostró '{obtenida}'."
+
+  - id: triangulo
+    type: python
+    title: Triángulo de asteriscos
+    difficulty: 3
+    prompt: >-
+      Lee un número `n` y dibuja un triángulo de `n` filas: la fila 1 tiene un `*`, la
+      fila 2 tiene `**`, y así hasta `n` asteriscos. Usa bucles anidados (sin
+      multiplicar cadenas).
+    stdin: ['4']
+    starterCode: |
+      n = int(input())
+    solution: |
+      n = int(input())
+      for fila in range(1, n + 1):
+          linea = ""
+          for _ in range(fila):
+              linea += "*"
+          print(linea)
+    hints:
+      - El bucle exterior recorre las filas; el interior agrega un `*` por cada columna.
+      - 'Construye la línea con `linea += "*"` y muéstrala al terminar el bucle interior.'
+    tests: |
+      assert codigo.count("for") >= 2, "Usa dos bucles `for`, uno dentro del otro."
+      assert '"*" *' not in codigo and "'*' *" not in codigo and '* "*"' not in codigo, "Resuélvelo con bucles, sin multiplicar cadenas."
+      for n in [4, 1, 6]:
+          lineas = ejecutar_con([str(n)]).splitlines()[1:]
+          esperado = ["*" * i for i in range(1, n + 1)]
+          assert lineas == esperado, f"Con {n} se esperaba {esperado} y se obtuvo {lineas}."
+
+  - id: range-final
+    type: quiz
+    title: El final de range
+    difficulty: 1
+    prompt: '¿Qué números genera `range(3, 8, 2)`?'
+    options:
+      - '3, 5, 7'
+      - '3, 5, 7, 9'
+      - '3, 4, 5, 6, 7, 8'
+      - '2, 4, 6, 8'
+    answer: 0
+    explanation: 'Empieza en 3 y avanza de 2 en 2 mientras el número sea menor que 8 (el final no se incluye): 3, 5, 7.'

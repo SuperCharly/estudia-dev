@@ -1,0 +1,111 @@
+exercises:
+  - id: cuenta-regresiva
+    type: python
+    title: Cuenta regresiva
+    difficulty: 1
+    prompt: >-
+      Lee un número entero positivo `n` y, usando `while`, muestra los números desde `n`
+      hasta `1` (uno por línea). Al final muestra `¡Despegue!`.
+    stdin: ['3']
+    starterCode: |
+      n = int(input())
+    solution: |
+      n = int(input())
+      while n >= 1:
+          print(n)
+          n -= 1
+      print("¡Despegue!")
+    hints:
+      - La condición del bucle puede ser `n >= 1`.
+      - No olvides restar 1 a `n` en cada vuelta (`n -= 1`).
+    tests: |
+      assert "while" in codigo, "Resuelve este ejercicio con un bucle `while`."
+      for entrada, esperado in [("3", ["3", "2", "1"]), ("5", ["5", "4", "3", "2", "1"]), ("1", ["1"])]:
+          lineas = ejecutar_con([entrada]).splitlines()[1:]
+          assert lineas == esperado + ["¡Despegue!"], f"Con {entrada} se esperaba {esperado + ['¡Despegue!']} y se obtuvo {lineas}."
+
+  - id: suma-hasta-cero
+    type: python
+    title: Sumar hasta el cero
+    difficulty: 2
+    prompt: >-
+      Lee números enteros (uno por línea) hasta que llegue un `0`. Muestra
+      `Total: <suma>` con la suma de todos los números leídos.
+    stdin: ['5', '8', '-2', '0']
+    starterCode: |
+      total = 0
+      numero = int(input())
+    solution: |
+      total = 0
+      numero = int(input())
+      while numero != 0:
+          total += numero
+          numero = int(input())
+      print(f"Total: {total}")
+    hints:
+      - El bucle debe seguir mientras `numero != 0`.
+      - Dentro del bucle, suma el número y lee el siguiente.
+    mistakes:
+      - |
+        total = 0
+        numero = int(input())
+        while numero != 0:
+            numero = int(input())
+            total += numero
+        print(f"Total: {total}")
+    tests: |
+      casos = [(["5", "8", "-2", "0"], "Total: 11"), (["0"], "Total: 0"), (["100", "0"], "Total: 100")]
+      for entradas, esperado in casos:
+          obtenido = ultima_linea(ejecutar_con(entradas))
+          assert obtenido == esperado, f"Con {entradas} se esperaba '{esperado}' y se mostró '{obtenido}'."
+
+  - id: adivina-el-numero
+    type: python
+    title: Adivina el número
+    difficulty: 3
+    prompt: >-
+      El número secreto es `42`. Lee intentos hasta que el usuario acierte. Tras cada
+      intento incorrecto muestra `Más alto` o `Más bajo`. Al acertar, muestra
+      `¡Correcto en <n> intentos!`, o `¡Correcto en 1 intento!` si acertó a la primera.
+    stdin: ['50', '30', '42']
+    starterCode: |
+      secreto = 42
+    solution: |
+      secreto = 42
+      intentos = 0
+      while True:
+          intento = int(input())
+          intentos += 1
+          if intento == secreto:
+              palabra = "intento" if intentos == 1 else "intentos"
+              print(f"¡Correcto en {intentos} {palabra}!")
+              break
+          elif intento < secreto:
+              print("Más alto")
+          else:
+              print("Más bajo")
+    hints:
+      - Un bucle `while True` con `break` al acertar funciona bien aquí.
+      - Usa un contador de intentos que aumente en cada vuelta.
+      - Si el intento es menor que el secreto, el número buscado es "más alto".
+      - 'Para el singular, recuerda la expresión condicional: `"intento" if intentos == 1 else "intentos"`.'
+    tests: |
+      def pistas(salida):
+          return [l for l in salida.splitlines() if not l.strip().lstrip("-").isdigit()]
+      assert pistas(ejecutar_con(["50", "30", "42"])) == ["Más bajo", "Más alto", "¡Correcto en 3 intentos!"], \
+          "Con 50, 30 y 42 se esperaba: Más bajo, Más alto, ¡Correcto en 3 intentos!"
+      assert pistas(ejecutar_con(["42"])) == ["¡Correcto en 1 intento!"], "Si se acierta a la primera, debe mostrar '¡Correcto en 1 intento!' (en singular)."
+      assert pistas(ejecutar_con(["10", "42"]))[-1] == "¡Correcto en 2 intentos!", "Con dos intentos debe mostrar '¡Correcto en 2 intentos!'."
+
+  - id: break-continue
+    type: quiz
+    title: break o continue
+    difficulty: 2
+    prompt: '¿Qué hace `continue` dentro de un bucle?'
+    options:
+      - Termina el bucle por completo
+      - Salta el resto de la iteración actual y pasa a la siguiente
+      - Repite la iteración actual
+      - Termina el programa
+    answer: 1
+    explanation: '`continue` salta al inicio de la siguiente iteración. Para terminar el bucle se usa `break`.'

@@ -1,0 +1,97 @@
+exercises:
+  - id: pedidos-por-estado
+    type: sql
+    title: Pedidos por estado
+    difficulty: 1
+    dataset: tienda
+    prompt: Muestra cada `estado` de la tabla `pedidos` junto con cuántos pedidos hay en ese estado.
+    starterCode: |
+      SELECT estado
+      FROM pedidos;
+    solution: |
+      SELECT estado, COUNT(*) AS pedidos
+      FROM pedidos
+      GROUP BY estado;
+    hints:
+      - Agrega `COUNT(*)` al `SELECT` y agrupa con `GROUP BY estado`.
+
+  - id: stock-por-categoria
+    type: sql
+    title: Stock por categoría
+    difficulty: 2
+    dataset: tienda
+    ordered: true
+    prompt: >-
+      Muestra cada `categoria` y la suma de su `stock`, ordenadas de la categoría con más
+      unidades a la que tiene menos.
+    starterCode: ''
+    solution: |
+      SELECT categoria, SUM(stock) AS unidades
+      FROM productos
+      GROUP BY categoria
+      ORDER BY unidades DESC;
+    hints:
+      - Agrupa por `categoria` y suma el `stock`.
+      - Puedes ordenar por el alias de la suma, en orden descendente.
+    mistakes:
+      - SELECT categoria, SUM(stock) AS unidades FROM productos GROUP BY categoria ORDER BY unidades;
+      - SELECT categoria, COUNT(stock) AS unidades FROM productos GROUP BY categoria ORDER BY unidades DESC;
+
+  - id: precio-promedio-categoria
+    type: sql
+    title: Precio promedio por categoría
+    difficulty: 2
+    dataset: tienda
+    ordered: true
+    prompt: >-
+      Muestra cada `categoria` y el precio promedio de sus productos redondeado a 2
+      decimales, ordenadas del promedio más alto al más bajo.
+    starterCode: |
+      SELECT categoria, nombre, AVG(precio)
+      FROM productos
+      GROUP BY categoria;
+    solution: |
+      SELECT categoria, ROUND(AVG(precio), 2) AS promedio
+      FROM productos
+      GROUP BY categoria
+      ORDER BY promedio DESC;
+    hints:
+      - Ejecuta el código inicial y lee el error. ¿Qué columna sobra?
+      - '`ROUND(AVG(precio), 2)` redondea el promedio.'
+
+  - id: pedidos-por-cliente
+    type: sql
+    title: Clientes más frecuentes
+    difficulty: 3
+    dataset: tienda
+    ordered: true
+    prompt: >-
+      Considerando solo los pedidos que no están cancelados, muestra el `cliente_id` y
+      cuántos pedidos tiene cada cliente. Ordena del cliente con más pedidos al que tiene
+      menos y, en caso de empate, por `cliente_id` de menor a mayor.
+    starterCode: ''
+    solution: |
+      SELECT cliente_id, COUNT(*) AS pedidos
+      FROM pedidos
+      WHERE estado <> 'cancelado'
+      GROUP BY cliente_id
+      ORDER BY pedidos DESC, cliente_id;
+    hints:
+      - Filtra los pedidos cancelados con `WHERE` antes de agrupar.
+      - '`ORDER BY` acepta varios criterios: `ORDER BY pedidos DESC, cliente_id`.'
+    mistakes:
+      - SELECT cliente_id, COUNT(*) FROM pedidos GROUP BY cliente_id ORDER BY COUNT(*) DESC, cliente_id;
+      - SELECT cliente_id, COUNT(*) FROM pedidos WHERE estado <> 'cancelado' GROUP BY cliente_id ORDER BY COUNT(*) DESC, cliente_id DESC;
+
+  - id: regla-group-by
+    type: quiz
+    title: La regla de GROUP BY
+    difficulty: 2
+    prompt: '¿Qué ocurre al ejecutar `SELECT categoria, nombre, COUNT(*) FROM productos GROUP BY categoria;`?'
+    options:
+      - Muestra el primer nombre de cada categoría
+      - Muestra una fila por producto
+      - Da un error, porque `nombre` no está agrupado ni agregado
+      - Ignora la columna `nombre`
+    answer: 2
+    explanation: 'Cada columna del `SELECT` debe estar en el `GROUP BY` o dentro de una función de agregación. PostgreSQL no puede elegir un `nombre` para todo el grupo.'
