@@ -53,7 +53,11 @@ La primera vez que ejecutes las pruebas E2E instala el navegador: `npx playwrigh
    - todo cumple el esquema y las referencias existen (módulos, prerrequisitos, libros,
      datasets);
    - **la solución oficial de cada ejercicio pasa sus propias pruebas**;
-   - **el código inicial no las pasa** (el ejercicio no es trivial).
+   - **el código inicial no las pasa** (el ejercicio no es trivial);
+   - **los errores típicos** listados en `mistakes` son rechazados (las pruebas son lo
+     bastante estrictas).
+4. En ejercicios de Python con `input()`, prueba varios casos con `ejecutar_con([...])`
+   para que no se puedan resolver imprimiendo la respuesta esperada.
 
 ### Reglas de contenido
 
@@ -88,7 +92,8 @@ futuro hay certificados, se evaluará en un servidor con sandbox.
 ## Hoja de ruta
 
 - [x] Fase 1 (MVP): plataforma, progreso local y módulo 1 de Python y de SQL
-- [ ] Completar los módulos 2–5 de Python y SQL
+- [x] Módulo 2 de Python (control de flujo) y de SQL (agregación)
+- [ ] Completar los módulos 3–5 de Python y SQL
 - [ ] Fase 0: script de catálogo (respetando robots.txt) y verificación de licencias
 - [ ] Fase 2: cuentas con Supabase (RLS) y sincronización del progreso
 - [ ] Fase 3: pipeline de borradores con IA + revisión humana
