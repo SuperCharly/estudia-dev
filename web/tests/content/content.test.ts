@@ -107,9 +107,30 @@ describe.skipIf(pythonExercises.length === 0)('ejercicios de Python', () => {
   });
 });
 
+/** Columnas y restricciones del esquema creado por un script (para comparar datasets). */
+const SCHEMA_QUERY = `
+  SELECT c.table_name, c.column_name, c.data_type, c.is_nullable, c.numeric_precision, c.numeric_scale
+  FROM information_schema.columns c
+  WHERE c.table_schema = 'public'
+  UNION ALL
+  SELECT tc.table_name, tc.constraint_type, pg_get_constraintdef(pc.oid), NULL, NULL, NULL
+  FROM information_schema.table_constraints tc
+  JOIN pg_constraint pc ON pc.conname = tc.constraint_name
+  WHERE tc.table_schema = 'public'
+  ORDER BY 1, 2, 3`;
+
 describe.skipIf(sqlExercises.length === 0)('ejercicios de SQL', () => {
   const sandbox = new SqlSandbox(createPgliteDatabase);
   afterAll(() => sandbox.close());
+
+  it.each([...content.datasets].filter(([, d]) => d.verificationSql))(
+    'el dataset %s y sus datos de verificación tienen el mismo esquema',
+    async (_id, dataset) => {
+      const visible = await sandbox.execute(dataset.sql, SCHEMA_QUERY);
+      const hidden = await sandbox.execute(dataset.verificationSql!, SCHEMA_QUERY);
+      expect(hidden?.rows).toEqual(visible?.rows);
+    },
+  );
 
   it.each(sqlExercises)('$name: la solución pasa; el código inicial y los errores típicos no', async ({ exercise }) => {
     const dataset = content.datasets.get(exercise.dataset)!;
@@ -118,6 +139,7 @@ describe.skipIf(sqlExercises.length === 0)('ejercicios de SQL', () => {
       mode: 'grade',
       solution: exercise.solution,
       datasetSql: dataset.sql,
+      verificationSql: dataset.verificationSql,
       checkQuery: exercise.checkQuery,
       ordered: exercise.ordered,
     } as const;
@@ -125,6 +147,13 @@ describe.skipIf(sqlExercises.length === 0)('ejercicios de SQL', () => {
     const solution = await runSql({ ...base, code: exercise.solution }, sandbox);
     expect(solution.status).toBe('pass');
     expect(solution.table?.rows.length ?? 0).toBeGreaterThan(0);
+
+    if (dataset.verificationSql) {
+      const hidden = await sandbox.execute(dataset.verificationSql, exercise.solution, exercise.checkQuery);
+      expect(hidden?.rows.length ?? 0, 'La solución debe devolver filas con los datos de verificación').toBeGreaterThan(
+        0,
+      );
+    }
 
     const starter = await runSql({ ...base, code: exercise.starterCode }, sandbox);
     expect(starter.status).not.toBe('pass');

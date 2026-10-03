@@ -18,6 +18,8 @@ exercises:
       - Con `JOIN`, los clientes sin pedidos desaparecen. Cámbialo por `LEFT JOIN`.
       - Los clientes sin pareja tienen `NULL` en las columnas de `pedidos`.
     mistakes:
+      # Con los datos visibles coincide por casualidad; los datos de verificación lo rechazan.
+      - SELECT c.nombre FROM clientes c WHERE c.ciudad IS NULL;
       - SELECT c.nombre FROM clientes c LEFT JOIN pedidos p ON p.cliente_id = c.id WHERE p.estado = 'cancelado';
 
   - id: productos-sin-vender
@@ -36,6 +38,8 @@ exercises:
       - Qué productos aparecen en pedidos está en `pedido_detalle`.
       - 'Usa el patrón `LEFT JOIN` + `IS NULL`.'
     mistakes:
+      # Con los datos visibles coincide por casualidad; los datos de verificación lo rechazan.
+      - SELECT pr.nombre FROM productos pr WHERE pr.stock = 0;
       - SELECT pr.nombre FROM productos pr WHERE NOT pr.activo;
 
   - id: pedidos-por-cliente-completo

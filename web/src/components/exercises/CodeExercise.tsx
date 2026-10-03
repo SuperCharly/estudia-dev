@@ -99,6 +99,7 @@ export default function CodeExercise({ itemId, exercise, dataset }: Props) {
               code: code.current,
               solution: exercise.solution,
               datasetSql: dataset?.sql ?? '',
+              verificationSql: dataset?.verificationSql,
               checkQuery: exercise.checkQuery,
               ordered: exercise.ordered,
             });
@@ -137,6 +138,12 @@ export default function CodeExercise({ itemId, exercise, dataset }: Props) {
             <p className="text-slate-600 dark:text-slate-400">
               <InlineCode text={dataset.description} />
             </p>
+            {dataset.verificationSql && (
+              <p className="text-slate-600 dark:text-slate-400">
+                Al comprobar, tu consulta también se ejecuta con otros datos de prueba que tienen las mismas tablas. Así
+                se verifica que resuelva el problema en general, no solo con estos datos.
+              </p>
+            )}
             <pre
               tabIndex={0}
               className="max-h-72 overflow-auto rounded bg-slate-900 p-3 font-mono text-xs text-slate-100"

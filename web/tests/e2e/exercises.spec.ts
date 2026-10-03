@@ -114,6 +114,20 @@ test.describe('ejercicios de SQL', () => {
     await expect(card.getByText(/devuelve 2 fila\(s\) y se esperaban 5/)).toBeVisible();
   });
 
+  test('una consulta que solo funciona con los datos visibles no se aprueba', async ({ page }) => {
+    await page.goto(SQL_LESSON);
+    const card = await openExercise(page, 'Electrónica disponible');
+    // Olvida filtrar por `activo`: con los datos visibles el resultado coincide de casualidad.
+    await typeCode(
+      page,
+      'Electrónica disponible',
+      "SELECT nombre, stock FROM productos WHERE categoria = 'Electrónica' AND stock > 0;",
+    );
+    await card.getByRole('button', { name: 'Comprobar' }).click();
+    await expect(card.getByText(/funciona con estos datos, pero no con otros datos de prueba/)).toBeVisible();
+    await expect(card.getByText('Completado')).toHaveCount(0);
+  });
+
   test('los errores de SQL se muestran de forma legible', async ({ page }) => {
     await page.goto(SQL_LESSON);
     const card = await openExercise(page, 'Productos económicos');

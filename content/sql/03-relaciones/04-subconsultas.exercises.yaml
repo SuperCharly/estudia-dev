@@ -18,6 +18,8 @@ exercises:
       - 'Escribe el cálculo del promedio como una consulta entre paréntesis: `(SELECT AVG(precio) FROM productos)`.'
     mistakes:
       - SELECT nombre, precio FROM productos WHERE precio > (SELECT MIN(precio) FROM productos);
+      # El promedio escrito a mano coincide con los datos visibles, pero no con los de verificación.
+      - SELECT nombre, precio FROM productos WHERE precio > 400.325;
 
   - id: clientes-con-pendientes
     type: sql

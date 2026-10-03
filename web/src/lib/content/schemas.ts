@@ -222,5 +222,11 @@ export const datasetSchema = z.object({
   description: z.string().min(1),
   /** Script que crea y llena las tablas. Se ejecuta en una base de datos nueva. */
   sql: z.string().min(1),
+  /**
+   * Datos de verificación: mismas tablas, filas distintas (no se muestran al estudiante).
+   * Una consulta se aprueba solo si coincide con la solución también aquí, lo que evita
+   * aprobar por coincidencias de los datos visibles o con valores escritos a mano.
+   */
+  verificationSql: z.string().min(1).optional(),
 });
 export type Dataset = z.infer<typeof datasetSchema>;

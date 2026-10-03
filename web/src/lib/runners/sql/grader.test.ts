@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import type { SqlRequest } from '../types';
-import { compareTables, normalizeCell, runSql, SqlSandbox } from './grader';
+import { compareTables, HIDDEN_DATA_MESSAGE, normalizeCell, runSql, SqlSandbox } from './grader';
 import { createPgliteDatabase } from './pglite';
 
 const sandbox = new SqlSandbox(createPgliteDatabase);
@@ -116,6 +116,38 @@ describe('runSql (PGlite)', () => {
 
     const next = await runSql(request({ code: 'SELECT nombre FROM productos' }), sandbox);
     expect(next.status).toBe('pass');
+  });
+
+  describe('datos de verificación ocultos', () => {
+    // Mismo esquema, otros datos: aquí el promedio de precios es 100.
+    const VERIFICATION = `
+      CREATE TABLE productos (id INT PRIMARY KEY, nombre TEXT NOT NULL, precio NUMERIC(10,2), alta DATE);
+      INSERT INTO productos VALUES (1, 'Goma', 50, NULL), (2, 'Regla', 150, NULL);
+    `;
+    const solution = 'SELECT nombre FROM productos WHERE precio > (SELECT AVG(precio) FROM productos)';
+
+    it('aprueba una consulta correcta en ambos conjuntos de datos', async () => {
+      const result = await runSql(request({ code: solution, solution, verificationSql: VERIFICATION }), sandbox);
+      expect(result.status).toBe('pass');
+    });
+
+    it('rechaza una consulta con el valor escrito a mano, sin revelar los datos ocultos', async () => {
+      // Con los datos visibles el promedio es 163.5, así que "> 163.5" coincide… solo ahí.
+      const result = await runSql(
+        request({ code: 'SELECT nombre FROM productos WHERE precio > 163.5', solution, verificationSql: VERIFICATION }),
+        sandbox,
+      );
+      expect(result).toMatchObject({ status: 'fail', message: HIDDEN_DATA_MESSAGE });
+      expect(result.table?.rows).toEqual([['Mochila']]); // Se muestra solo el resultado con los datos visibles.
+    });
+
+    it('no usa los datos ocultos al solo ejecutar', async () => {
+      const result = await runSql(
+        request({ mode: 'run', code: 'SELECT COUNT(*) FROM productos', verificationSql: VERIFICATION }),
+        sandbox,
+      );
+      expect(result.table?.rows).toEqual([['3']]);
+    });
   });
 
   it('una vez iniciada, cada ejecución es rápida', async () => {

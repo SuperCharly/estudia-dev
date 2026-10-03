@@ -32,6 +32,9 @@ exercises:
       - Son tres condiciones que se deben cumplir a la vez.
       - 'El texto va entre comillas simples: `''Electrónica''`.'
       - '`activo` ya es booleano: puedes escribir `AND activo`.'
+    mistakes:
+      # Olvidar `activo`: con los datos visibles no cambia el resultado, con los de verificación sí.
+      - SELECT nombre, stock FROM productos WHERE categoria = 'Electrónica' AND stock > 0;
 
   - id: clientes-sin-ciudad
     type: sql

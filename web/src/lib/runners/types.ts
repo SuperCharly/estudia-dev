@@ -32,6 +32,8 @@ export interface SqlRequest {
   code: string;
   solution: string;
   datasetSql: string;
+  /** Datos ocultos con los que también debe coincidir la consulta para aprobar. */
+  verificationSql?: string;
   checkQuery?: string;
   ordered: boolean;
 }

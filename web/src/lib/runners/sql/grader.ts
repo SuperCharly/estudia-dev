@@ -175,7 +175,39 @@ export async function runSql(request: SqlRequest, sandbox: SqlSandbox): Promise<
   }
 
   const problem = compareTables(actual, expected, request.ordered);
-  return problem
-    ? { status: 'fail', message: problem, table: forDisplay(actual) }
-    : { status: 'pass', message: '¡Correcto! Tu consulta devuelve el resultado esperado.', table: forDisplay(actual) };
+  if (problem) return { status: 'fail', message: problem, table: forDisplay(actual) };
+
+  if (request.verificationSql) {
+    const hidden = await verifyWithHiddenData(request, request.verificationSql, sandbox);
+    if (hidden) return { status: 'fail', message: hidden, table: forDisplay(actual) };
+  }
+  return {
+    status: 'pass',
+    message: '¡Correcto! Tu consulta devuelve el resultado esperado.',
+    table: forDisplay(actual),
+  };
+}
+
+export const HIDDEN_DATA_MESSAGE =
+  'Tu consulta funciona con estos datos, pero no con otros datos de prueba que tienen la misma estructura. ' +
+  'Revisa que no dependa de valores particulares: calcula y filtra según lo que pide el enunciado.';
+
+/** Compara usuario y solución con los datos ocultos. Devuelve un mensaje si no coinciden. */
+async function verifyWithHiddenData(
+  request: SqlRequest,
+  verificationSql: string,
+  sandbox: SqlSandbox,
+): Promise<string | null> {
+  const expected = await sandbox.execute(verificationSql, request.solution, request.checkQuery);
+  if (!expected)
+    throw new Error('La solución del ejercicio no devuelve ningún resultado con los datos de verificación.');
+  let actual: ResultTable | null;
+  try {
+    actual = await sandbox.execute(verificationSql, request.code, request.checkQuery);
+  } catch (error) {
+    if (error instanceof UserSqlError) return HIDDEN_DATA_MESSAGE;
+    throw error;
+  }
+  // No se revelan los datos ocultos: solo se indica que el resultado no coincide.
+  return actual && compareTables(actual, expected, request.ordered) === null ? null : HIDDEN_DATA_MESSAGE;
 }
