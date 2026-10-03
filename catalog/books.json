@@ -5,8 +5,9 @@
     "authors": ["Sergio Delgado Quintero"],
     "topic": "python",
     "catalogUrl": "https://librosgratis.dev/leer/python-aprende-sergio-delgado-quintero/",
-    "license": "sin-verificar",
-    "lastChecked": "2026-09-30"
+    "sourceUrl": "https://aprendepython.es/",
+    "license": "CC-BY",
+    "lastChecked": "2026-10-03"
   },
   {
     "id": "think-python-es",
@@ -14,8 +15,9 @@
     "authors": ["Allen B. Downey"],
     "topic": "python",
     "catalogUrl": "https://librosgratis.dev/leer/think-python-en-espanol/",
-    "license": "sin-verificar",
-    "lastChecked": "2026-09-30"
+    "sourceUrl": "https://libropython.es/",
+    "license": "CC-BY-NC-SA",
+    "lastChecked": "2026-10-03"
   },
   {
     "id": "manual-de-python-alf",
@@ -23,8 +25,9 @@
     "authors": ["Alfredo Sánchez Alberca"],
     "topic": "python",
     "catalogUrl": "https://librosgratis.dev/leer/manual-de-python-aprende-con-alf/",
-    "license": "sin-verificar",
-    "lastChecked": "2026-09-30"
+    "sourceUrl": "https://aprendeconalf.es/python-manual/",
+    "license": "CC-BY-NC-SA",
+    "lastChecked": "2026-10-03"
   },
   {
     "id": "python-manual-basico",
@@ -32,8 +35,8 @@
     "authors": ["José Miguel Ruiz Torres"],
     "topic": "python",
     "catalogUrl": "https://librosgratis.dev/leer/python-manual-basico/",
-    "license": "sin-verificar",
-    "lastChecked": "2026-09-30"
+    "license": "CC-BY-NC-SA",
+    "lastChecked": "2026-10-03"
   },
   {
     "id": "sql-apuntes-basicos",
@@ -41,8 +44,8 @@
     "authors": ["Unai Estébanez"],
     "topic": "sql",
     "catalogUrl": "https://librosgratis.dev/leer/sql-apuntes-basicos/",
-    "license": "sin-verificar",
-    "lastChecked": "2026-09-30"
+    "license": "CC-BY",
+    "lastChecked": "2026-10-03"
   },
   {
     "id": "bases-de-datos-relacionales",
@@ -50,8 +53,9 @@
     "authors": ["Ernesto Galvis Lista", "Alexander Bustamante Martínez"],
     "topic": "sql",
     "catalogUrl": "https://librosgratis.dev/leer/bases-de-datos-relacionales-unimagdalena/",
+    "sourceUrl": "https://libros.unimagdalena.edu.co/bases-de-datos-relacionales-0fm4w.html",
     "license": "sin-verificar",
-    "lastChecked": "2026-09-30"
+    "lastChecked": "2026-10-03"
   },
   {
     "id": "diseno-bases-de-datos",
@@ -59,7 +63,7 @@
     "authors": ["Jordi Casas Roma"],
     "topic": "sql",
     "catalogUrl": "https://librosgratis.dev/leer/bases-datos-diseno-introduccion/",
-    "license": "sin-verificar",
-    "lastChecked": "2026-09-30"
+    "license": "CC-BY-NC-ND",
+    "lastChecked": "2026-10-03"
   }
 ]
