@@ -38,6 +38,7 @@ estudia-dev/
 | `npm run test:e2e`     | Pruebas en navegador sobre el build (CSP, accesibilidad, ejercicios) |
 | `npm run lint`         | ESLint                                                              |
 | `npm run format`       | Prettier                                                            |
+| `npm run audit:deps`   | Auditoría de dependencias con excepciones documentadas              |
 | `npm run verify`       | Todo lo anterior, en el orden de la CI                              |
 
 La primera vez que ejecutes las pruebas E2E instala el navegador: `npx playwright install chromium`.
@@ -83,7 +84,10 @@ La primera vez que ejecutes las pruebas E2E instala el navegador: `npx playwrigh
 - Todo lo leído de `localStorage` se valida con Zod; si está corrupto se ignora.
 - El contenido se escribe en Markdown puro (no MDX), así que no puede ejecutar código
   durante el build.
-- CI con CodeQL, Dependabot y `npm audit`.
+- CI con CodeQL, Dependabot y auditoría de dependencias (`npm run audit:deps`): falla ante
+  cualquier aviso alto o crítico. Las excepciones se documentan en `web/audit-exceptions.json`
+  con su motivo y una fecha de revisión; al vencer, o cuando el aviso desaparece, la CI
+  vuelve a fallar hasta que se revise.
 
 **Limitación conocida:** la corrección ocurre en el navegador, así que alguien podría
 falsear su propio progreso. Es aceptable para una plataforma de aprendizaje; si en el

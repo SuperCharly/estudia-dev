@@ -1,0 +1,9 @@
+[
+  {
+    "advisory": "GHSA-ch52-4w7c-c8xp",
+    "package": "http-cache-semantics",
+    "reason": "Dependencia transitiva de Astro sin versión corregida. Astro solo la usa al compilar, para cachear imágenes remotas (astro/dist/assets/build/remote.js), y este sitio no tiene imágenes remotas ni sirve respuestas cacheadas: es estático. El fallo (filtrar respuestas cacheadas entre usuarios) no aplica.",
+    "added": "2026-10-03",
+    "reviewBy": "2026-12-01"
+  }
+]
