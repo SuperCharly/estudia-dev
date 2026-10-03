@@ -1,0 +1,346 @@
+# En los ejercicios de CREATE TABLE, `checkQuery` no compara datos: pone a prueba la tabla
+# creada con inserciones válidas e inválidas y devuelve una fila por regla ("sí" = se cumple).
+# Cada intento se ejecuta en un bloque con EXCEPTION, así que un fallo no interrumpe el resto.
+exercises:
+  - id: tabla-categorias
+    type: sql
+    title: Tu primera tabla
+    difficulty: 1
+    dataset: tienda
+    checkQuery: |
+      CREATE TEMP TABLE _pruebas (n SERIAL, regla TEXT, se_cumple TEXT);
+      CREATE FUNCTION pg_temp.probar(regla TEXT, sentencia TEXT, debe_aceptar BOOLEAN) RETURNS void AS $f$
+      BEGIN
+        BEGIN
+          EXECUTE sentencia;
+          INSERT INTO _pruebas (regla, se_cumple) VALUES (regla, CASE WHEN debe_aceptar THEN 'sí' ELSE 'no' END);
+        EXCEPTION WHEN OTHERS THEN
+          INSERT INTO _pruebas (regla, se_cumple) VALUES (regla, CASE WHEN debe_aceptar THEN 'no' ELSE 'sí' END);
+        END;
+      END $f$ LANGUAGE plpgsql;
+      SELECT pg_temp.probar('Acepta una categoría con id y nombre', $$INSERT INTO categorias (id, nombre) VALUES (1, 'Hogar')$$, TRUE);
+      SELECT pg_temp.probar('Acepta una segunda categoría', $$INSERT INTO categorias (id, nombre) VALUES (2, 'Libros')$$, TRUE);
+      SELECT pg_temp.probar('Rechaza un id repetido', $$INSERT INTO categorias (id, nombre) VALUES (1, 'Deportes')$$, FALSE);
+      SELECT pg_temp.probar('Rechaza una categoría sin nombre', $$INSERT INTO categorias (id, nombre) VALUES (3, NULL)$$, FALSE);
+      SELECT pg_temp.probar('Rechaza un nombre repetido', $$INSERT INTO categorias (id, nombre) VALUES (4, 'Hogar')$$, FALSE);
+      SELECT regla, se_cumple FROM _pruebas ORDER BY n;
+    prompt: >-
+      Crea la tabla `categorias` con dos columnas: `id` (entero, clave primaria) y `nombre`
+      (texto, obligatorio y sin repetidos). Al pulsar Ejecutar verás qué reglas cumple tu
+      tabla.
+    starterCode: |
+      CREATE TABLE categorias (
+        id INTEGER
+      );
+    solution: |
+      CREATE TABLE categorias (
+        id     INTEGER PRIMARY KEY,
+        nombre TEXT NOT NULL UNIQUE
+      );
+    hints:
+      - La clave primaria se indica con `PRIMARY KEY` después del tipo.
+      - '"Obligatorio" es `NOT NULL` y "sin repetidos" es `UNIQUE`. Pueden ir juntas en la misma columna.'
+    mistakes:
+      - |
+        CREATE TABLE categorias (
+          id     INTEGER PRIMARY KEY,
+          nombre TEXT NOT NULL
+        );
+      - |
+        CREATE TABLE categorias (
+          id     INTEGER,
+          nombre TEXT NOT NULL UNIQUE
+        );
+      - |
+        CREATE TABLE categorias (
+          id     INTEGER PRIMARY KEY,
+          nombre TEXT UNIQUE
+        );
+
+  - id: tabla-resenas
+    type: sql
+    title: Reseñas de productos
+    difficulty: 2
+    dataset: tienda
+    checkQuery: |
+      CREATE TEMP TABLE _pruebas (n SERIAL, regla TEXT, se_cumple TEXT);
+      CREATE FUNCTION pg_temp.probar(regla TEXT, sentencia TEXT, debe_aceptar BOOLEAN) RETURNS void AS $f$
+      BEGIN
+        BEGIN
+          EXECUTE sentencia;
+          INSERT INTO _pruebas (regla, se_cumple) VALUES (regla, CASE WHEN debe_aceptar THEN 'sí' ELSE 'no' END);
+        EXCEPTION WHEN OTHERS THEN
+          INSERT INTO _pruebas (regla, se_cumple) VALUES (regla, CASE WHEN debe_aceptar THEN 'no' ELSE 'sí' END);
+        END;
+      END $f$ LANGUAGE plpgsql;
+      SELECT pg_temp.probar('Acepta una reseña sin comentario ni fecha', $$INSERT INTO resenas (id, producto_id, calificacion) VALUES (1, 1, 5)$$, TRUE);
+      SELECT pg_temp.probar('La fecha toma un valor por defecto', $$SELECT 1 / count(*) FROM resenas WHERE id = 1 AND fecha IS NOT NULL$$, TRUE);
+      SELECT pg_temp.probar('Acepta una reseña con comentario y fecha', $$INSERT INTO resenas (id, producto_id, calificacion, comentario, fecha) VALUES (2, 2, 1, 'Llegó dañado', '2025-10-01')$$, TRUE);
+      SELECT pg_temp.probar('Rechaza una calificación de 6', $$INSERT INTO resenas (id, producto_id, calificacion) VALUES (3, 1, 6)$$, FALSE);
+      SELECT pg_temp.probar('Rechaza una calificación de 0', $$INSERT INTO resenas (id, producto_id, calificacion) VALUES (4, 1, 0)$$, FALSE);
+      SELECT pg_temp.probar('Rechaza una reseña sin calificación', $$INSERT INTO resenas (id, producto_id, calificacion) VALUES (5, 1, NULL)$$, FALSE);
+      SELECT pg_temp.probar('Rechaza un producto que no existe', $$INSERT INTO resenas (id, producto_id, calificacion) VALUES (6, 999, 4)$$, FALSE);
+      SELECT pg_temp.probar('Rechaza una reseña sin producto', $$INSERT INTO resenas (id, producto_id, calificacion) VALUES (7, NULL, 4)$$, FALSE);
+      SELECT pg_temp.probar('Rechaza un id repetido', $$INSERT INTO resenas (id, producto_id, calificacion) VALUES (1, 2, 3)$$, FALSE);
+      SELECT regla, se_cumple FROM _pruebas ORDER BY n;
+    prompt: >-
+      Crea la tabla `resenas` con estas columnas: `id` (entero, clave primaria);
+      `producto_id` (entero, obligatorio, debe existir en `productos`); `calificacion`
+      (entero, obligatorio, entre 1 y 5); `comentario` (texto, opcional); y `fecha` (fecha,
+      obligatoria, que por defecto sea la fecha actual).
+    starterCode: |
+      CREATE TABLE resenas (
+        id           INTEGER PRIMARY KEY,
+        producto_id  INTEGER,
+        calificacion INTEGER,
+        comentario   TEXT,
+        fecha        DATE
+      );
+    solution: |
+      CREATE TABLE resenas (
+        id           INTEGER PRIMARY KEY,
+        producto_id  INTEGER NOT NULL REFERENCES productos (id),
+        calificacion INTEGER NOT NULL CHECK (calificacion BETWEEN 1 AND 5),
+        comentario   TEXT,
+        fecha        DATE NOT NULL DEFAULT CURRENT_DATE
+      );
+    hints:
+      - Ejecuta el código inicial para ver qué reglas le faltan a la tabla.
+      - '"Debe existir en productos" es una clave foránea, que se escribe `REFERENCES productos (id)`.'
+      - 'El rango se valida con `CHECK (calificacion BETWEEN 1 AND 5)`.'
+      - 'La fecha actual por defecto es `DEFAULT CURRENT_DATE`.'
+    mistakes:
+      - |
+        CREATE TABLE resenas (
+          id           INTEGER PRIMARY KEY,
+          producto_id  INTEGER NOT NULL REFERENCES productos (id),
+          calificacion INTEGER NOT NULL CHECK (calificacion <= 5),
+          comentario   TEXT,
+          fecha        DATE NOT NULL DEFAULT CURRENT_DATE
+        );
+      - |
+        CREATE TABLE resenas (
+          id           INTEGER PRIMARY KEY,
+          producto_id  INTEGER NOT NULL,
+          calificacion INTEGER NOT NULL CHECK (calificacion BETWEEN 1 AND 5),
+          comentario   TEXT,
+          fecha        DATE NOT NULL DEFAULT CURRENT_DATE
+        );
+      - |
+        CREATE TABLE resenas (
+          id           INTEGER PRIMARY KEY,
+          producto_id  INTEGER NOT NULL REFERENCES productos (id),
+          calificacion INTEGER NOT NULL CHECK (calificacion BETWEEN 1 AND 5),
+          comentario   TEXT,
+          fecha        DATE NOT NULL
+        );
+      - |
+        CREATE TABLE resenas (
+          id           INTEGER PRIMARY KEY,
+          producto_id  INTEGER REFERENCES productos (id),
+          calificacion INTEGER CHECK (calificacion BETWEEN 1 AND 5),
+          comentario   TEXT NOT NULL,
+          fecha        DATE DEFAULT CURRENT_DATE
+        );
+
+  - id: proveedores-identidad
+    type: sql
+    title: Identificadores automáticos
+    difficulty: 2
+    dataset: tienda
+    checkQuery: |
+      INSERT INTO proveedores (nombre) VALUES ('Proveedor de prueba');
+      SELECT id, nombre, telefono FROM proveedores ORDER BY id;
+    prompt: >-
+      Crea la tabla `proveedores` con `id` (entero generado automáticamente, clave
+      primaria), `nombre` (texto, obligatorio) y `telefono` (texto, opcional). Después
+      inserta dos proveedores sin indicar su `id`: `Papelera del Norte`, con teléfono
+      `555-0101`, y `TecnoMayoreo`, sin teléfono. Al comprobar se insertará un tercer
+      proveedor de prueba, también sin `id`.
+    starterCode: |
+      CREATE TABLE proveedores (
+        id       INTEGER PRIMARY KEY,
+        nombre   TEXT NOT NULL,
+        telefono TEXT
+      );
+    solution: |
+      CREATE TABLE proveedores (
+        id       INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        nombre   TEXT NOT NULL,
+        telefono TEXT
+      );
+
+      INSERT INTO proveedores (nombre, telefono) VALUES
+        ('Papelera del Norte', '555-0101'),
+        ('TecnoMayoreo', NULL);
+    hints:
+      - 'Para que el `id` se genere solo, escribe `GENERATED ALWAYS AS IDENTITY` entre el tipo y `PRIMARY KEY`.'
+      - En el `INSERT`, la lista de columnas no debe incluir `id`.
+      - Inserta primero `Papelera del Norte` para que reciba el id 1.
+    mistakes:
+      - |
+        CREATE TABLE proveedores (
+          id       INTEGER PRIMARY KEY,
+          nombre   TEXT NOT NULL,
+          telefono TEXT
+        );
+        INSERT INTO proveedores (id, nombre, telefono) VALUES
+          (1, 'Papelera del Norte', '555-0101'),
+          (2, 'TecnoMayoreo', NULL);
+      - |
+        CREATE TABLE proveedores (
+          id       INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+          nombre   TEXT NOT NULL,
+          telefono TEXT
+        );
+        INSERT INTO proveedores (nombre, telefono) VALUES
+          ('TecnoMayoreo', NULL),
+          ('Papelera del Norte', '555-0101');
+      - |
+        CREATE TABLE proveedores (
+          id       INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+          nombre   TEXT NOT NULL,
+          telefono TEXT
+        );
+
+  - id: agregar-columnas
+    type: sql
+    title: Ampliar una tabla existente
+    difficulty: 2
+    dataset: tienda
+    checkQuery: |
+      SELECT c.id, c.nombre, c.telefono, c.boletin,
+        (SELECT is_nullable FROM information_schema.columns
+         WHERE table_name = 'clientes' AND column_name = 'boletin') AS boletin_admite_null
+      FROM clientes c
+      ORDER BY c.id;
+    prompt: >-
+      Agrega dos columnas a la tabla `clientes`: `telefono` (texto, opcional) y `boletin`
+      (booleano, obligatorio), que indica si el cliente quiere recibir el boletín y que
+      debe valer `FALSE` para los clientes actuales y, por defecto, para los nuevos.
+    starterCode: |
+      ALTER TABLE clientes ADD COLUMN telefono TEXT;
+    solution: |
+      ALTER TABLE clientes ADD COLUMN telefono TEXT;
+      ALTER TABLE clientes ADD COLUMN boletin BOOLEAN NOT NULL DEFAULT FALSE;
+    hints:
+      - Cada columna se agrega con `ALTER TABLE clientes ADD COLUMN nombre TIPO`.
+      - Una columna obligatoria en una tabla con datos necesita un `DEFAULT`, o las filas existentes quedarían con `NULL`.
+      - 'La segunda columna es `boletin BOOLEAN NOT NULL DEFAULT FALSE`.'
+    mistakes:
+      - |
+        ALTER TABLE clientes ADD COLUMN telefono TEXT;
+        ALTER TABLE clientes ADD COLUMN boletin BOOLEAN DEFAULT FALSE;
+      - |
+        ALTER TABLE clientes ADD COLUMN telefono TEXT;
+        ALTER TABLE clientes ADD COLUMN boletin BOOLEAN NOT NULL DEFAULT TRUE;
+      - |
+        ALTER TABLE clientes ADD COLUMN telefono TEXT;
+        ALTER TABLE clientes ADD COLUMN boletin BOOLEAN NOT NULL;
+
+  - id: etiquetas-muchos-a-muchos
+    type: sql
+    title: Etiquetas para los productos
+    difficulty: 3
+    dataset: tienda
+    checkQuery: |
+      CREATE TEMP TABLE _pruebas (n SERIAL, regla TEXT, se_cumple TEXT);
+      CREATE FUNCTION pg_temp.probar(regla TEXT, sentencia TEXT, debe_aceptar BOOLEAN) RETURNS void AS $f$
+      BEGIN
+        BEGIN
+          EXECUTE sentencia;
+          INSERT INTO _pruebas (regla, se_cumple) VALUES (regla, CASE WHEN debe_aceptar THEN 'sí' ELSE 'no' END);
+        EXCEPTION WHEN OTHERS THEN
+          INSERT INTO _pruebas (regla, se_cumple) VALUES (regla, CASE WHEN debe_aceptar THEN 'no' ELSE 'sí' END);
+        END;
+      END $f$ LANGUAGE plpgsql;
+      SELECT pg_temp.probar('Acepta dos etiquetas', $$INSERT INTO etiquetas (id, nombre) VALUES (1, 'oferta'), (2, 'novedad')$$, TRUE);
+      SELECT pg_temp.probar('Rechaza una etiqueta con nombre repetido', $$INSERT INTO etiquetas (id, nombre) VALUES (3, 'oferta')$$, FALSE);
+      SELECT pg_temp.probar('Rechaza una etiqueta sin nombre', $$INSERT INTO etiquetas (id, nombre) VALUES (4, NULL)$$, FALSE);
+      SELECT pg_temp.probar('Un producto puede tener varias etiquetas', $$INSERT INTO producto_etiqueta (producto_id, etiqueta_id) VALUES (1, 1), (1, 2)$$, TRUE);
+      SELECT pg_temp.probar('Una etiqueta puede estar en varios productos', $$INSERT INTO producto_etiqueta (producto_id, etiqueta_id) VALUES (2, 1)$$, TRUE);
+      SELECT pg_temp.probar('Rechaza repetir la misma pareja', $$INSERT INTO producto_etiqueta (producto_id, etiqueta_id) VALUES (1, 1)$$, FALSE);
+      SELECT pg_temp.probar('Rechaza un producto que no existe', $$INSERT INTO producto_etiqueta (producto_id, etiqueta_id) VALUES (999, 1)$$, FALSE);
+      SELECT pg_temp.probar('Rechaza una etiqueta que no existe', $$INSERT INTO producto_etiqueta (producto_id, etiqueta_id) VALUES (2, 999)$$, FALSE);
+      SELECT regla, se_cumple FROM _pruebas ORDER BY n;
+    prompt: >-
+      Un producto puede tener varias etiquetas y una etiqueta puede aplicarse a varios
+      productos. Crea la tabla `etiquetas`, con `id` (entero, clave primaria) y `nombre`
+      (texto, obligatorio y sin repetidos), y la tabla intermedia `producto_etiqueta`, con
+      `producto_id` y `etiqueta_id`, que deben existir en `productos` y en `etiquetas`. La
+      misma pareja de producto y etiqueta no puede repetirse.
+    starterCode: |
+      CREATE TABLE etiquetas (
+        id     INTEGER PRIMARY KEY,
+        nombre TEXT NOT NULL UNIQUE
+      );
+    solution: |
+      CREATE TABLE etiquetas (
+        id     INTEGER PRIMARY KEY,
+        nombre TEXT NOT NULL UNIQUE
+      );
+
+      CREATE TABLE producto_etiqueta (
+        producto_id INTEGER NOT NULL REFERENCES productos (id),
+        etiqueta_id INTEGER NOT NULL REFERENCES etiquetas (id),
+        PRIMARY KEY (producto_id, etiqueta_id)
+      );
+    hints:
+      - La tabla intermedia tiene dos columnas, y cada una es una clave foránea con `REFERENCES`.
+      - Para impedir parejas repetidas, la clave primaria debe abarcar las dos columnas.
+      - 'Se escribe al final, como una línea aparte: `PRIMARY KEY (producto_id, etiqueta_id)`.'
+    mistakes:
+      - |
+        CREATE TABLE etiquetas (
+          id     INTEGER PRIMARY KEY,
+          nombre TEXT NOT NULL UNIQUE
+        );
+        CREATE TABLE producto_etiqueta (
+          producto_id INTEGER NOT NULL REFERENCES productos (id),
+          etiqueta_id INTEGER NOT NULL REFERENCES etiquetas (id)
+        );
+      - |
+        CREATE TABLE etiquetas (
+          id     INTEGER PRIMARY KEY,
+          nombre TEXT NOT NULL UNIQUE
+        );
+        CREATE TABLE producto_etiqueta (
+          producto_id INTEGER PRIMARY KEY REFERENCES productos (id),
+          etiqueta_id INTEGER NOT NULL REFERENCES etiquetas (id)
+        );
+      - |
+        CREATE TABLE etiquetas (
+          id     INTEGER PRIMARY KEY,
+          nombre TEXT NOT NULL UNIQUE
+        );
+        CREATE TABLE producto_etiqueta (
+          producto_id INTEGER NOT NULL,
+          etiqueta_id INTEGER NOT NULL,
+          PRIMARY KEY (producto_id, etiqueta_id)
+        );
+
+  - id: delete-vs-drop
+    type: quiz
+    title: DELETE y DROP
+    difficulty: 1
+    prompt: '¿Cuál es la diferencia entre `DELETE FROM cupones;` y `DROP TABLE cupones;`?'
+    options:
+      - 'Ninguna, son equivalentes'
+      - '`DELETE` borra todas las filas y la tabla sigue existiendo; `DROP TABLE` elimina la tabla con sus datos'
+      - '`DELETE` elimina la tabla; `DROP TABLE` solo borra las filas'
+      - '`DROP TABLE` solo funciona si la tabla está vacía'
+    answer: 1
+    explanation: 'Tras `DELETE FROM cupones` la tabla queda vacía, pero se puede seguir insertando en ella. Tras `DROP TABLE cupones` la tabla deja de existir y cualquier consulta sobre ella falla.'
+
+  - id: que-restriccion
+    type: quiz
+    title: Elegir la restricción
+    difficulty: 2
+    prompt: 'En una tabla `usuarios` quieres que no haya dos usuarios con el mismo `email`, pero que el email pueda quedar sin indicar. ¿Qué restricción necesita la columna?'
+    options:
+      - '`NOT NULL`'
+      - '`PRIMARY KEY`'
+      - '`UNIQUE`'
+      - '`CHECK (email IS NOT NULL)`'
+    answer: 2
+    explanation: '`UNIQUE` impide valores repetidos, pero permite `NULL` (varios, de hecho, porque `NULL` no se considera igual a otro `NULL`). `PRIMARY KEY` también impide repetidos, pero además obliga a indicar el valor.'

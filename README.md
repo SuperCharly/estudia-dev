@@ -58,6 +58,11 @@ La primera vez que ejecutes las pruebas E2E instala el navegador: `npx playwrigh
      bastante estrictas).
 4. En ejercicios de Python con `input()`, prueba varios casos con `ejecutar_con([...])`
    para que no se puedan resolver imprimiendo la respuesta esperada.
+5. En ejercicios de SQL que modifican datos (`INSERT`, `UPDATE`, `DELETE`, `CREATE TABLE`),
+   define `checkQuery`: se ejecuta después del código y su resultado es lo que se compara
+   con el de la solución. Para comprobar las restricciones de una tabla nueva, haz que
+   `checkQuery` intente inserciones válidas e inválidas (ver
+   `content/sql/04-modificar-datos/04-create-table.exercises.yaml`).
 
 ### Reglas de contenido
 
@@ -94,7 +99,8 @@ futuro hay certificados, se evaluará en un servidor con sandbox.
 - [x] Fase 1 (MVP): plataforma, progreso local y módulo 1 de Python y de SQL
 - [x] Módulo 2 de Python (control de flujo) y de SQL (agregación)
 - [x] Módulo 3 de Python (estructuras de datos) y de SQL (relaciones entre tablas)
-- [ ] Completar los módulos 4–5 de Python y SQL
+- [x] Módulo 4 de Python (funciones) y de SQL (modificar datos y crear tablas)
+- [ ] Módulo 5 de Python (errores y módulos) y de SQL (mini-proyecto: biblioteca)
 - [ ] Fase 0: script de catálogo (respetando robots.txt) y verificación de licencias
 - [ ] Fase 2: cuentas con Supabase (RLS) y sincronización del progreso
 - [ ] Fase 3: pipeline de borradores con IA + revisión humana

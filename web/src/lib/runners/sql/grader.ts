@@ -16,6 +16,13 @@ export const MAX_DISPLAY_ROWS = 200;
 /** Error en el código del estudiante (a diferencia de un error del dataset o del sistema). */
 class UserSqlError extends Error {}
 
+/**
+ * La consulta de comprobación falló tras ejecutar el código (p. ej. el estudiante no creó la
+ * tabla que se le pedía). Con el código del estudiante es una respuesta incorrecta; con la
+ * solución oficial es un error del contenido.
+ */
+class CheckQueryError extends Error {}
+
 /** Objetos que el estudiante haya dejado fuera de la transacción (p. ej. tras un COMMIT). */
 const LEFTOVERS_QUERY = `
   SELECT
@@ -55,9 +62,16 @@ export class SqlSandbox {
       } catch (error) {
         throw new UserSqlError(error instanceof Error ? error.message : String(error));
       }
-      const final = checkQuery
-        ? (await db.exec(checkQuery, { rowMode: 'array' })).at(-1)
-        : results.findLast((r) => r.fields.length > 0);
+      let final: ExecResult | undefined;
+      if (checkQuery) {
+        try {
+          final = (await db.exec(checkQuery, { rowMode: 'array' })).at(-1);
+        } catch (error) {
+          throw new CheckQueryError(error instanceof Error ? error.message : String(error));
+        }
+      } else {
+        final = results.findLast((r) => r.fields.length > 0);
+      }
       if (!final) return null;
       return {
         columns: final.fields.map((f) => f.name),
@@ -107,6 +121,8 @@ export function normalizeCell(value: unknown): string {
   if (typeof value === 'number') return formatNumber(value);
   if (typeof value === 'boolean') return value ? 'true' : 'false';
   if (typeof value === 'string') {
+    // El texto 'NULL' no es un NULL: se muestra entre comillas para que no se confundan.
+    if (value === 'NULL') return "'NULL'";
     // NUMERIC llega como texto: "12.50" y "12.5" deben ser iguales.
     return /^-?\d+(\.\d+)?$/.test(value) ? formatNumber(Number(value)) : value;
   }
@@ -154,6 +170,12 @@ export async function runSql(request: SqlRequest, sandbox: SqlSandbox): Promise<
     actual = await sandbox.execute(request.datasetSql, request.code, request.checkQuery);
   } catch (error) {
     if (error instanceof UserSqlError) return { status: 'error', message: `Error de SQL: ${error.message}` };
+    if (error instanceof CheckQueryError) {
+      return {
+        status: request.mode === 'run' ? 'ok' : 'fail',
+        message: `Tu código se ejecutó, pero el resultado no se pudo revisar: ${error.message}`,
+      };
+    }
     throw error;
   }
 
@@ -175,7 +197,11 @@ export async function runSql(request: SqlRequest, sandbox: SqlSandbox): Promise<
   }
 
   const problem = compareTables(actual, expected, request.ordered);
-  if (problem) return { status: 'fail', message: problem, table: forDisplay(actual) };
+  if (problem) {
+    // Con checkQuery la tabla no es la consulta del estudiante, sino el estado tras su código.
+    const message = request.checkQuery ? CHECK_MISMATCH_MESSAGE : problem;
+    return { status: 'fail', message, table: forDisplay(actual) };
+  }
 
   if (request.verificationSql) {
     const hidden = await verifyWithHiddenData(request, request.verificationSql, sandbox);
@@ -187,6 +213,10 @@ export async function runSql(request: SqlRequest, sandbox: SqlSandbox): Promise<
     table: forDisplay(actual),
   };
 }
+
+export const CHECK_MISMATCH_MESSAGE =
+  'El resultado todavía no es el esperado. La tabla de abajo muestra cómo quedó todo después de tu código: ' +
+  'compárala con lo que pide el enunciado.';
 
 export const HIDDEN_DATA_MESSAGE =
   'Tu consulta funciona con estos datos, pero no con otros datos de prueba que tienen la misma estructura. ' +
@@ -205,7 +235,7 @@ async function verifyWithHiddenData(
   try {
     actual = await sandbox.execute(verificationSql, request.code, request.checkQuery);
   } catch (error) {
-    if (error instanceof UserSqlError) return HIDDEN_DATA_MESSAGE;
+    if (error instanceof UserSqlError || error instanceof CheckQueryError) return HIDDEN_DATA_MESSAGE;
     throw error;
   }
   // No se revelan los datos ocultos: solo se indica que el resultado no coincide.

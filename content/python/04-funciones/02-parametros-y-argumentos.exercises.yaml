@@ -1,0 +1,195 @@
+exercises:
+  - id: precio-con-impuesto
+    type: python
+    title: Precio con impuesto
+    difficulty: 1
+    prompt: >-
+      Modifica la función `precio_final` para que el impuesto sea un segundo parámetro
+      llamado `impuesto`, con valor por defecto `0.16`. Debe devolver el precio más el
+      impuesto, redondeado a 2 decimales. Así, `precio_final(100)` devuelve `116.0` y
+      `precio_final(100, 0.08)` devuelve `108.0`.
+    starterCode: |
+      def precio_final(precio):
+          return round(precio * 1.16, 2)
+
+      print(precio_final(100))
+    solution: |
+      def precio_final(precio, impuesto=0.16):
+          return round(precio * (1 + impuesto), 2)
+
+      print(precio_final(100))
+      print(precio_final(100, 0.08))
+    hints:
+      - 'Agrega el parámetro con su valor por defecto: `def precio_final(precio, impuesto=0.16):`.'
+      - El precio final es `precio * (1 + impuesto)`.
+    mistakes:
+      - |
+        def precio_final(precio, impuesto=0.16):
+            return round(precio * 1.16, 2)
+
+        print(precio_final(100))
+      - |
+        def precio_final(precio, impuesto):
+            return round(precio * (1 + impuesto), 2)
+
+        print(precio_final(100, 0.16))
+    tests: |
+      assert precio_final(100) == 116.0, f"precio_final(100) debe devolver 116.0 y devolvió {precio_final(100)!r}."
+      assert precio_final(100, 0.08) == 108.0, f"precio_final(100, 0.08) debe devolver 108.0 y devolvió {precio_final(100, 0.08)!r}."
+      assert precio_final(50, impuesto=0) == 50, "Debe poder llamarse con el argumento por nombre: precio_final(50, impuesto=0)."
+      assert precio_final(19.99) == 23.19, f"precio_final(19.99) debe devolver 23.19 y devolvió {precio_final(19.99)!r}."
+
+  - id: repetir
+    type: python
+    title: Repetir un texto
+    difficulty: 2
+    prompt: >-
+      Define la función `repetir(texto, veces=2, separador=" ")` que devuelva el texto
+      repetido `veces` veces, unido con el separador. Por ejemplo, `repetir("ja")` devuelve
+      `ja ja` y `repetir("ja", 3, separador="-")` devuelve `ja-ja-ja`.
+    starterCode: |
+      # Define aquí la función repetir
+
+      print(repetir("ja"))
+      print(repetir("ja", 3, separador="-"))
+    solution: |
+      def repetir(texto, veces=2, separador=" "):
+          return separador.join([texto] * veces)
+
+      print(repetir("ja"))
+      print(repetir("ja", 3, separador="-"))
+    hints:
+      - '`[texto] * veces` crea una lista con el texto repetido.'
+      - '`separador.join(lista)` une los elementos de una lista de textos.'
+    mistakes:
+      - |
+        def repetir(texto, veces=2, separador=" "):
+            return (texto + separador) * veces
+
+        print(repetir("ja"))
+      - |
+        def repetir(texto, veces=2, separador=" "):
+            return " ".join([texto] * veces)
+
+        print(repetir("ja"))
+    tests: |
+      assert repetir("ja") == "ja ja", f"repetir('ja') debe devolver 'ja ja' y devolvió {repetir('ja')!r}."
+      assert repetir("ja", 3) == "ja ja ja", f"repetir('ja', 3) debe devolver 'ja ja ja' y devolvió {repetir('ja', 3)!r}."
+      assert repetir("ja", 3, separador="-") == "ja-ja-ja", "repetir('ja', 3, separador='-') debe devolver 'ja-ja-ja'."
+      assert repetir("eco", separador="") == "ecoeco", "repetir('eco', separador='') debe devolver 'ecoeco'."
+      assert repetir("x", 1) == "x", "Con veces=1 no debe aparecer el separador."
+
+  - id: sumar-todos
+    type: python
+    title: Sumar cualquier cantidad
+    difficulty: 2
+    prompt: >-
+      Define la función `sumar` de modo que acepte cualquier cantidad de números como
+      argumentos separados y devuelva su suma: `sumar(1, 2)` devuelve `3`,
+      `sumar(1, 2, 3, 4)` devuelve `10` y `sumar()` devuelve `0`.
+    starterCode: |
+      def sumar(a, b):
+          return a + b
+
+      print(sumar(1, 2))
+      print(sumar(1, 2, 3, 4))
+    solution: |
+      def sumar(*numeros):
+          total = 0
+          for n in numeros:
+              total += n
+          return total
+
+      print(sumar(1, 2))
+      print(sumar(1, 2, 3, 4))
+    hints:
+      - Un parámetro con asterisco (`*numeros`) recibe todos los argumentos en una tupla.
+      - Recorre la tupla y acumula la suma, o usa `sum(numeros)`.
+    mistakes:
+      - |
+        def sumar(numeros):
+            return sum(numeros)
+
+        print(sumar([1, 2]))
+      - |
+        def sumar(a=0, b=0, c=0, d=0):
+            return a + b + c + d
+
+        print(sumar(1, 2))
+    tests: |
+      assert sumar(1, 2) == 3, f"sumar(1, 2) debe devolver 3 y devolvió {sumar(1, 2)!r}."
+      assert sumar(1, 2, 3, 4) == 10, "sumar(1, 2, 3, 4) debe devolver 10."
+      assert sumar() == 0, "sumar() sin argumentos debe devolver 0."
+      assert sumar(5) == 5, "sumar(5) debe devolver 5."
+      assert sumar(*range(1, 11)) == 55, "La función debe aceptar cualquier cantidad de argumentos (por ejemplo, diez)."
+
+  - id: lista-por-defecto
+    type: python
+    title: La lista que no se vacía
+    difficulty: 3
+    prompt: >-
+      La función `agregar` debería devolver una lista nueva cuando no se le pasa ninguna,
+      pero "recuerda" los elementos de llamadas anteriores. Corrígela. Cuando sí se le pasa
+      una lista, debe agregar el elemento a esa misma lista y devolverla.
+    starterCode: |
+      def agregar(elemento, lista=[]):
+          lista.append(elemento)
+          return lista
+
+      print(agregar("a"))
+      print(agregar("b"))
+    solution: |
+      def agregar(elemento, lista=None):
+          if lista is None:
+              lista = []
+          lista.append(elemento)
+          return lista
+
+      print(agregar("a"))
+      print(agregar("b"))
+    hints:
+      - El valor por defecto `[]` se crea una sola vez y se comparte entre todas las llamadas.
+      - Usa `None` como valor por defecto.
+      - 'Dentro de la función: `if lista is None: lista = []`.'
+    mistakes:
+      - |
+        def agregar(elemento, lista=None):
+            lista = []
+            lista.append(elemento)
+            return lista
+
+        print(agregar("a"))
+        print(agregar("b"))
+    tests: |
+      assert agregar("a") == ["a"], f"agregar('a') debe devolver ['a'] y devolvió {agregar('a')!r}."
+      assert agregar("b") == ["b"], "Cada llamada sin lista debe empezar con una lista nueva y vacía."
+      compras = ["pan"]
+      resultado = agregar("leche", compras)
+      assert resultado == ["pan", "leche"], "agregar('leche', ['pan']) debe devolver ['pan', 'leche']."
+      assert resultado is compras, "Cuando se pasa una lista, el elemento debe agregarse a esa misma lista."
+
+  - id: orden-de-argumentos
+    type: quiz
+    title: Mezclar argumentos
+    difficulty: 2
+    prompt: 'Dada `def f(a, b=2, c=3): ...`, ¿cuál de estas llamadas es incorrecta?'
+    options:
+      - '`f(1)`'
+      - '`f(1, c=5)`'
+      - '`f(a=1, 5)`'
+      - '`f(c=1, a=2)`'
+    answer: 2
+    explanation: 'Los argumentos posicionales deben ir antes que los que se pasan por nombre. `f(a=1, 5)` produce un `SyntaxError`. Las demás son válidas: `a` siempre recibe un valor y `b` y `c` usan su valor por defecto si no se indican.'
+
+  - id: tipo-de-args
+    type: quiz
+    title: ¿Qué es args?
+    difficulty: 1
+    prompt: 'En `def f(*args): ...`, ¿qué contiene `args` al llamar `f(1, 2, 3)`?'
+    options:
+      - 'La lista `[1, 2, 3]`'
+      - 'La tupla `(1, 2, 3)`'
+      - 'Solo el primer argumento, `1`'
+      - 'El texto `"1, 2, 3"`'
+    answer: 1
+    explanation: 'Un parámetro con asterisco empaqueta los argumentos posicionales sobrantes en una tupla. Si no se pasa ninguno, la tupla está vacía.'

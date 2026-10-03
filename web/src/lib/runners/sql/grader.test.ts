@@ -1,6 +1,13 @@
 import { afterAll, describe, expect, it } from 'vitest';
 import type { SqlRequest } from '../types';
-import { compareTables, HIDDEN_DATA_MESSAGE, normalizeCell, runSql, SqlSandbox } from './grader';
+import {
+  CHECK_MISMATCH_MESSAGE,
+  compareTables,
+  HIDDEN_DATA_MESSAGE,
+  normalizeCell,
+  runSql,
+  SqlSandbox,
+} from './grader';
 import { createPgliteDatabase } from './pglite';
 
 const sandbox = new SqlSandbox(createPgliteDatabase);
@@ -27,6 +34,7 @@ const request = (overrides: Partial<SqlRequest>): SqlRequest => ({
 describe('normalizeCell', () => {
   it.each([
     [null, 'NULL'],
+    ['NULL', "'NULL'"],
     [3, '3'],
     [10n, '10'],
     ['35.00', '35'],
@@ -93,6 +101,32 @@ describe('runSql (PGlite)', () => {
       sandbox,
     );
     expect(result.status).toBe('pass');
+  });
+
+  it('con checkQuery, el mensaje de fallo habla del resultado y no de "tu consulta"', async () => {
+    const result = await runSql(
+      request({
+        code: 'UPDATE productos SET precio = 6',
+        solution: 'UPDATE productos SET precio = 6 WHERE id = 1',
+        checkQuery: 'SELECT id, precio FROM productos ORDER BY id',
+      }),
+      sandbox,
+    );
+    expect(result).toMatchObject({ status: 'fail', message: CHECK_MISMATCH_MESSAGE });
+    expect(result.table?.rows).toHaveLength(3);
+  });
+
+  it('reprueba (sin fallar) si la consulta de comprobación no se puede ejecutar', async () => {
+    const base = {
+      solution: 'CREATE TABLE notas (id INT PRIMARY KEY)',
+      checkQuery: 'SELECT count(*) FROM notas',
+    };
+    const graded = await runSql(request({ ...base, code: 'CREATE TABLE apuntes (id INT PRIMARY KEY)' }), sandbox);
+    expect(graded.status).toBe('fail');
+    expect(graded.message).toContain('notas');
+
+    const ran = await runSql(request({ ...base, mode: 'run', code: 'SELECT 1' }), sandbox);
+    expect(ran.status).toBe('ok');
   });
 
   it('cada ejecución parte de datos limpios (un DELETE del estudiante no afecta a la solución)', async () => {

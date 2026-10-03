@@ -1,0 +1,134 @@
+exercises:
+  - id: quitar-lineas
+    type: sql
+    title: Quitar líneas de un pedido
+    difficulty: 1
+    dataset: tienda
+    checkQuery: SELECT pedido_id, producto_id, cantidad FROM pedido_detalle ORDER BY pedido_id, producto_id;
+    prompt: >-
+      Elimina de `pedido_detalle` todas las líneas del pedido `3`. Las líneas de los demás
+      pedidos deben conservarse.
+    starterCode: |
+      DELETE FROM pedido_detalle;
+    solution: |
+      DELETE FROM pedido_detalle
+      WHERE pedido_id = 3;
+    hints:
+      - Ejecuta el código inicial y observa que la tabla queda vacía.
+      - Agrega un `WHERE` que limite el borrado al pedido 3.
+    mistakes:
+      - |
+        DELETE FROM pedido_detalle
+        WHERE producto_id = 3;
+      - |
+        DELETE FROM pedido_detalle
+        WHERE pedido_id <> 3;
+
+  - id: clientes-sin-pedidos
+    type: sql
+    title: Limpiar clientes sin pedidos
+    difficulty: 2
+    dataset: tienda
+    checkQuery: SELECT id, nombre FROM clientes ORDER BY id;
+    prompt: Elimina a los clientes que nunca han hecho un pedido.
+    starterCode: ''
+    solution: |
+      DELETE FROM clientes c
+      WHERE NOT EXISTS (SELECT 1 FROM pedidos p WHERE p.cliente_id = c.id);
+    hints:
+      - Primero escribe un `SELECT` que muestre a los clientes sin pedidos.
+      - Puedes usar `NOT EXISTS` con una subconsulta sobre `pedidos`, o `id NOT IN (SELECT cliente_id FROM pedidos)`.
+    mistakes:
+      # Con los datos visibles coincide por casualidad; los datos de verificación lo rechazan.
+      - DELETE FROM clientes WHERE ciudad IS NULL;
+      - DELETE FROM clientes WHERE id IN (SELECT cliente_id FROM pedidos WHERE estado = 'cancelado');
+
+  - id: productos-descatalogados
+    type: sql
+    title: Retirar productos descatalogados
+    difficulty: 2
+    dataset: tienda
+    checkQuery: SELECT id, nombre, activo FROM productos ORDER BY id;
+    prompt: >-
+      Elimina los productos inactivos que no aparecen en ningún pedido. Los productos
+      inactivos que sí se han pedido deben conservarse (forman parte del historial).
+    starterCode: |
+      DELETE FROM productos
+      WHERE NOT activo;
+    solution: |
+      DELETE FROM productos pr
+      WHERE NOT pr.activo
+        AND NOT EXISTS (SELECT 1 FROM pedido_detalle d WHERE d.producto_id = pr.id);
+    hints:
+      - Qué productos se han pedido está en `pedido_detalle`.
+      - Hacen falta dos condiciones unidas con `AND`, una para "inactivo" y otra para "sin pedidos".
+      - 'La segunda puede ser `NOT EXISTS (SELECT 1 FROM pedido_detalle d WHERE d.producto_id = pr.id)`.'
+    mistakes:
+      - |
+        DELETE FROM productos pr
+        WHERE NOT EXISTS (SELECT 1 FROM pedido_detalle d WHERE d.producto_id = pr.id);
+      - |
+        DELETE FROM productos
+        WHERE stock = 0;
+
+  - id: pedidos-cancelados
+    type: sql
+    title: Eliminar los pedidos cancelados
+    difficulty: 3
+    dataset: tienda
+    checkQuery: |
+      SELECT p.id, p.estado, d.producto_id
+      FROM pedidos p
+      FULL JOIN pedido_detalle d ON d.pedido_id = p.id
+      ORDER BY p.id, d.producto_id;
+    prompt: >-
+      Elimina los pedidos con estado `cancelado` junto con todas sus líneas de detalle. No
+      debe quedar ninguna línea de un pedido eliminado, ni borrarse nada de los demás
+      pedidos.
+    starterCode: |
+      DELETE FROM pedidos
+      WHERE estado = 'cancelado';
+    solution: |
+      DELETE FROM pedido_detalle
+      WHERE pedido_id IN (SELECT id FROM pedidos WHERE estado = 'cancelado');
+
+      DELETE FROM pedidos
+      WHERE estado = 'cancelado';
+    hints:
+      - Ejecuta el código inicial y lee el error. La clave foránea de `pedido_detalle` impide el borrado.
+      - Borra primero las líneas de detalle de esos pedidos y después los pedidos.
+      - 'Las líneas a borrar son las que cumplen `pedido_id IN (SELECT id FROM pedidos WHERE estado = ''cancelado'')`.'
+    mistakes:
+      - |
+        DELETE FROM pedido_detalle
+        WHERE pedido_id IN (SELECT id FROM pedidos WHERE estado = 'cancelado');
+      - |
+        DELETE FROM pedido_detalle;
+        DELETE FROM pedidos
+        WHERE estado = 'cancelado';
+
+  - id: borrar-con-fk
+    type: quiz
+    title: Borrar con claves foráneas
+    difficulty: 2
+    prompt: 'El cliente 1 tiene tres pedidos y la clave foránea de `pedidos` no usa `ON DELETE CASCADE`. ¿Qué ocurre con `DELETE FROM clientes WHERE id = 1;`?'
+    options:
+      - 'Se borra el cliente y sus pedidos quedan con `cliente_id` en `NULL`'
+      - 'Se borran el cliente y sus tres pedidos'
+      - 'La base de datos rechaza el borrado con un error'
+      - 'Se borra el cliente y los pedidos quedan apuntando a un cliente inexistente'
+    answer: 2
+    explanation: 'La clave foránea garantiza que cada pedido apunte a un cliente existente, así que el borrado se rechaza. Habría que eliminar antes sus pedidos (y las líneas de estos) o, mejor, no borrar al cliente.'
+
+  - id: delete-vs-update
+    type: quiz
+    title: ¿DELETE o UPDATE?
+    difficulty: 1
+    prompt: 'Un cliente pide que se elimine su email de la base de datos, pero debe seguir registrado. ¿Qué sentencia corresponde?'
+    options:
+      - '`DELETE FROM clientes WHERE id = 3;`'
+      - '`DELETE email FROM clientes WHERE id = 3;`'
+      - '`UPDATE clientes SET email = NULL WHERE id = 3;`'
+      - '`UPDATE clientes SET email = NULL;`'
+    answer: 2
+    explanation: '`DELETE` elimina filas completas y no admite columnas. Para vaciar un dato se usa `UPDATE` con `NULL`, siempre con el `WHERE` que identifique la fila.'

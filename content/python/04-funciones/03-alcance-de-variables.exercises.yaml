@@ -1,0 +1,206 @@
+exercises:
+  - id: variable-local
+    type: quiz
+    title: ¿Dónde existe la variable?
+    difficulty: 1
+    prompt: 'Una función define `resultado = 5` en su cuerpo. Después de llamarla, el programa principal ejecuta `print(resultado)` (sin haber creado esa variable fuera). ¿Qué ocurre?'
+    options:
+      - 'Muestra `5`'
+      - 'Muestra `None`'
+      - 'Se produce un `NameError`'
+      - 'Muestra `0`'
+    answer: 2
+    explanation: '`resultado` es una variable local: solo existe dentro de la función mientras se ejecuta. Para usar el valor fuera, la función debe devolverlo con `return`.'
+
+  - id: sin-global
+    type: python
+    title: Acumular sin variables globales
+    difficulty: 2
+    prompt: >-
+      El programa debería mostrar `80`, pero falla con un `UnboundLocalError`. Corrígelo sin
+      usar `global`: haz que `agregar(total, monto)` reciba el total actual y devuelva el
+      nuevo, y usa ese valor devuelto en el programa principal.
+    starterCode: |
+      total = 0
+
+      def agregar(monto):
+          total = total + monto
+
+      agregar(50)
+      agregar(30)
+      print(total)
+    solution: |
+      def agregar(total, monto):
+          return total + monto
+
+      total = 0
+      total = agregar(total, 50)
+      total = agregar(total, 30)
+      print(total)
+    hints:
+      - Asignar a `total` dentro de la función crea una variable local distinta de la global.
+      - Agrega `total` como primer parámetro y devuelve `total + monto`.
+      - 'En el programa principal, guarda lo que devuelve la función: `total = agregar(total, 50)`.'
+    mistakes:
+      - |
+        total = 0
+
+        def agregar(monto):
+            global total
+            total = total + monto
+
+        agregar(50)
+        agregar(30)
+        print(total)
+      - |
+        def agregar(total, monto):
+            total = total + monto
+
+        total = 0
+        agregar(total, 50)
+        agregar(total, 30)
+        print(total)
+    tests: |
+      assert "global" not in codigo, "Resuélvelo sin usar la palabra global."
+      assert agregar(10, 5) == 15, "agregar(10, 5) debe devolver 15."
+      assert agregar(0, 0) == 0, "agregar(0, 0) debe devolver 0."
+      assert ultima_linea(salida) == "80", f"El programa debe mostrar 80 y mostró '{ultima_linea(salida)}'."
+
+  - id: sin-duplicados
+    type: python
+    title: Sin duplicados, sin efectos secundarios
+    difficulty: 2
+    prompt: >-
+      Define la función `sin_duplicados(lista)` que devuelva una lista nueva con los
+      elementos de `lista` sin repetir, en el orden en que aparecen por primera vez. La
+      lista original no debe cambiar.
+    starterCode: |
+      def sin_duplicados(lista):
+          pass
+
+
+      numeros = [3, 1, 3, 2, 1]
+      print(sin_duplicados(numeros))
+      print(numeros)
+    solution: |
+      def sin_duplicados(lista):
+          resultado = []
+          for elemento in lista:
+              if elemento not in resultado:
+                  resultado.append(elemento)
+          return resultado
+
+
+      numeros = [3, 1, 3, 2, 1]
+      print(sin_duplicados(numeros))
+      print(numeros)
+    hints:
+      - Crea una lista vacía dentro de la función y ve agregando solo lo que aún no esté en ella.
+      - No uses `remove` ni `sort` sobre el parámetro, porque modificarían la lista original.
+      - Un conjunto (`set`) elimina duplicados, pero no conserva el orden.
+    mistakes:
+      - |
+        def sin_duplicados(lista):
+            for elemento in lista[:]:
+                while lista.count(elemento) > 1:
+                    lista.reverse()
+                    lista.remove(elemento)
+                    lista.reverse()
+            return lista
+      - |
+        def sin_duplicados(lista):
+            return sorted(set(lista))
+    tests: |
+      original = [3, 1, 3, 2, 1]
+      resultado = sin_duplicados(original)
+      assert resultado == [3, 1, 2], f"sin_duplicados([3, 1, 3, 2, 1]) debe devolver [3, 1, 2] y devolvió {resultado!r}."
+      assert original == [3, 1, 3, 2, 1], "La función no debe modificar la lista original."
+      assert resultado is not original, "La función debe devolver una lista nueva."
+      assert sin_duplicados(["b", "a", "b"]) == ["b", "a"], "sin_duplicados(['b', 'a', 'b']) debe devolver ['b', 'a']."
+      assert sin_duplicados([]) == [], "Con una lista vacía debe devolver una lista vacía."
+
+  - id: primos
+    type: python
+    title: Números primos por partes
+    difficulty: 3
+    prompt: >-
+      Define `es_primo(n)`, que devuelva `True` si `n` es un número primo (mayor que 1 y
+      divisible solo entre 1 y él mismo), y `primos_hasta(limite)`, que devuelva la lista de
+      primos entre 2 y `limite` (incluido). `primos_hasta` debe usar `es_primo`. Por ejemplo,
+      `primos_hasta(10)` devuelve `[2, 3, 5, 7]`.
+    starterCode: |
+      def es_primo(n):
+          pass
+
+
+      def primos_hasta(limite):
+          pass
+
+
+      print(primos_hasta(20))
+    solution: |
+      def es_primo(n):
+          if n < 2:
+              return False
+          for divisor in range(2, n):
+              if n % divisor == 0:
+                  return False
+          return True
+
+
+      def primos_hasta(limite):
+          primos = []
+          for numero in range(2, limite + 1):
+              if es_primo(numero):
+                  primos.append(numero)
+          return primos
+
+
+      print(primos_hasta(20))
+    hints:
+      - En `es_primo`, prueba los divisores de 2 a `n - 1`. Si alguno divide a `n`, devuelve `False` de inmediato.
+      - Si el bucle termina sin encontrar divisores, devuelve `True`. No olvides que 0 y 1 no son primos.
+      - En `primos_hasta`, recorre `range(2, limite + 1)` y agrega a una lista los que cumplan `es_primo`.
+    mistakes:
+      - |
+        def es_primo(n):
+            for divisor in range(2, n):
+                if n % divisor == 0:
+                    return False
+            return True
+
+
+        def primos_hasta(limite):
+            return [numero for numero in range(2, limite + 1) if es_primo(numero)]
+      - |
+        def es_primo(n):
+            if n < 2:
+                return False
+            for divisor in range(2, n):
+                if n % divisor == 0:
+                    return False
+            return True
+
+
+        def primos_hasta(limite):
+            return [numero for numero in range(2, limite) if es_primo(numero)]
+    tests: |
+      for n, esperado in [(2, True), (3, True), (4, False), (9, False), (17, True), (1, False), (0, False), (25, False)]:
+          assert es_primo(n) is esperado, f"es_primo({n}) debe devolver {esperado} y devolvió {es_primo(n)!r}."
+      assert primos_hasta(10) == [2, 3, 5, 7], f"primos_hasta(10) debe devolver [2, 3, 5, 7] y devolvió {primos_hasta(10)!r}."
+      assert primos_hasta(13) == [2, 3, 5, 7, 11, 13], "El límite debe estar incluido: primos_hasta(13) termina en 13."
+      assert primos_hasta(1) == [], "primos_hasta(1) debe devolver una lista vacía."
+      assert "es_primo(" in codigo.split("def primos_hasta")[1], "primos_hasta debe usar la función es_primo."
+
+  - id: asignar-parametro
+    type: quiz
+    title: Modificar o reasignar
+    difficulty: 2
+    prompt: 'Sea `def f(lista): lista.append(1)` y `def g(lista): lista = [1]`. Si `datos = []`, ¿qué vale `datos` después de llamar `f(datos)` y luego `g(datos)`?'
+    options:
+      - '`[]`'
+      - '`[1]`'
+      - '`[1, 1]`'
+      - '`[[1]]`'
+    answer: 1
+    explanation: '`f` modifica la lista original con `append`, así que `datos` pasa a ser `[1]`. `g` solo hace que su nombre local `lista` apunte a otra lista: la original no cambia.'

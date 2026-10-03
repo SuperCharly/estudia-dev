@@ -1,0 +1,148 @@
+exercises:
+  - id: desactivar-sin-stock
+    type: sql
+    title: Desactivar productos agotados
+    difficulty: 1
+    dataset: tienda
+    checkQuery: SELECT id, nombre, stock, activo FROM productos ORDER BY id;
+    prompt: >-
+      El código inicial desactiva todos los productos. Corrígelo para que solo marque como
+      inactivos (`activo = FALSE`) los productos sin existencias (`stock` igual a 0).
+    starterCode: |
+      UPDATE productos
+      SET activo = FALSE;
+    solution: |
+      UPDATE productos
+      SET activo = FALSE
+      WHERE stock = 0;
+    hints:
+      - Ejecuta el código inicial y mira la columna `activo` de todas las filas.
+      - Falta un `WHERE` que limite el cambio a los productos con `stock = 0`.
+    mistakes:
+      - |
+        UPDATE productos
+        SET stock = 0
+        WHERE activo = FALSE;
+      - |
+        UPDATE productos
+        SET activo = FALSE
+        WHERE stock > 0;
+
+  - id: subir-precios
+    type: sql
+    title: Aumento de precios
+    difficulty: 2
+    dataset: tienda
+    checkQuery: SELECT id, nombre, categoria, precio FROM productos ORDER BY id;
+    prompt: >-
+      Sube un 10 % el precio de todos los productos de la categoría `Electrónica`. Los
+      demás productos no deben cambiar.
+    starterCode: ''
+    solution: |
+      UPDATE productos
+      SET precio = precio * 1.10
+      WHERE categoria = 'Electrónica';
+    hints:
+      - El precio nuevo se calcula con el actual, con `precio * 1.10`.
+      - Limita el cambio con `WHERE categoria = 'Electrónica'`.
+    mistakes:
+      - |
+        UPDATE productos
+        SET precio = precio * 1.10;
+      - |
+        UPDATE productos
+        SET precio = precio + 10
+        WHERE categoria = 'Electrónica';
+      - |
+        UPDATE productos
+        SET precio = precio * 0.10
+        WHERE categoria = 'Electrónica';
+
+  - id: reactivar-productos
+    type: sql
+    title: Reactivar y reabastecer
+    difficulty: 2
+    dataset: tienda
+    checkQuery: SELECT id, nombre, stock, activo FROM productos ORDER BY id;
+    prompt: >-
+      Los productos inactivos vuelven a venderse: márcalos como activos y deja su `stock`
+      en `10`. Los productos que ya estaban activos no deben cambiar.
+    starterCode: |
+      UPDATE productos SET activo = TRUE WHERE NOT activo;
+      UPDATE productos SET stock = 10 WHERE NOT activo;
+    solution: |
+      UPDATE productos
+      SET activo = TRUE, stock = 10
+      WHERE NOT activo;
+    hints:
+      - Ejecuta el código inicial. ¿Por qué el stock no cambia?
+      - La segunda sentencia ya no encuentra productos inactivos, porque la primera los activó.
+      - 'Cambia las dos columnas en una sola sentencia: `SET activo = TRUE, stock = 10`.'
+    mistakes:
+      - |
+        UPDATE productos
+        SET activo = TRUE, stock = 10
+        WHERE stock = 0;
+      - |
+        UPDATE productos
+        SET activo = TRUE, stock = 10;
+
+  - id: cancelar-pendientes
+    type: sql
+    title: Cancelar pedidos de una ciudad
+    difficulty: 3
+    dataset: tienda
+    checkQuery: SELECT id, cliente_id, estado FROM pedidos ORDER BY id;
+    prompt: >-
+      Por un problema de reparto, cambia a `cancelado` el estado de los pedidos `pendiente`
+      de los clientes de `Guadalajara`. Los pedidos en otro estado y los de otras ciudades
+      no deben cambiar.
+    starterCode: |
+      UPDATE pedidos
+      SET estado = 'cancelado'
+      WHERE estado = 'pendiente';
+    solution: |
+      UPDATE pedidos
+      SET estado = 'cancelado'
+      WHERE estado = 'pendiente'
+        AND cliente_id IN (SELECT id FROM clientes WHERE ciudad = 'Guadalajara');
+    hints:
+      - La ciudad está en la tabla `clientes`, no en `pedidos`.
+      - Una subconsulta puede devolver los `id` de los clientes de Guadalajara.
+      - 'Agrega la condición `AND cliente_id IN (SELECT id FROM clientes WHERE ciudad = ''Guadalajara'')`.'
+    mistakes:
+      - |
+        UPDATE pedidos
+        SET estado = 'cancelado'
+        WHERE cliente_id IN (SELECT id FROM clientes WHERE ciudad = 'Guadalajara');
+      - |
+        UPDATE pedidos
+        SET estado = 'cancelado'
+        WHERE estado = 'pendiente'
+           OR cliente_id IN (SELECT id FROM clientes WHERE ciudad = 'Guadalajara');
+
+  - id: update-sin-where
+    type: quiz
+    title: UPDATE sin WHERE
+    difficulty: 1
+    prompt: "¿Qué hace `UPDATE clientes SET ciudad = 'Lima';`?"
+    options:
+      - 'Produce un error, porque falta el `WHERE`'
+      - 'Cambia la ciudad solo de la primera fila'
+      - 'Cambia la ciudad de todos los clientes'
+      - 'Cambia la ciudad de los clientes que no tenían ninguna'
+    answer: 2
+    explanation: 'Sin `WHERE`, la sentencia se aplica a todas las filas de la tabla. Es válida y la base de datos no pide confirmación, por eso conviene probar antes la condición con un `SELECT`.'
+
+  - id: valor-anterior
+    type: quiz
+    title: Valores anteriores
+    difficulty: 2
+    prompt: 'Un producto tiene `precio = 100` y `stock = 5`. ¿Cómo queda tras `UPDATE productos SET precio = stock, stock = precio WHERE id = 1;`?'
+    options:
+      - '`precio = 5` y `stock = 5`'
+      - '`precio = 5` y `stock = 100`'
+      - '`precio = 100` y `stock = 100`'
+      - 'Se produce un error'
+    answer: 1
+    explanation: 'Todas las expresiones de `SET` se calculan con los valores que la fila tenía antes del cambio, así que las dos columnas intercambian sus valores.'

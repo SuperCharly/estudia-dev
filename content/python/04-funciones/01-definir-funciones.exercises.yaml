@@ -1,0 +1,269 @@
+exercises:
+  - id: saludo
+    type: python
+    title: Devolver un saludo
+    difficulty: 1
+    prompt: >-
+      La función `saludo` muestra el saludo, pero debería devolverlo. Corrígela para que
+      `saludo("Ana")` devuelva el texto `¡Hola, Ana!` (sin mostrar nada por su cuenta).
+    starterCode: |
+      def saludo(nombre):
+          print(f"¡Hola, {nombre}!")
+
+      print(saludo("Ana"))
+    solution: |
+      def saludo(nombre):
+          return f"¡Hola, {nombre}!"
+
+      print(saludo("Ana"))
+    hints:
+      - Ejecuta el código inicial. ¿Por qué aparece `None` en la segunda línea?
+      - Cambia `print(...)` por `return ...` dentro de la función.
+    mistakes:
+      - |
+        def saludo(nombre):
+            print(f"¡Hola, {nombre}!")
+            return nombre
+
+        print(saludo("Ana"))
+    tests: |
+      assert saludo("Ana") == "¡Hola, Ana!", f"saludo('Ana') debe devolver '¡Hola, Ana!' y devolvió {saludo('Ana')!r}."
+      assert saludo("Luis") == "¡Hola, Luis!", "La función debe usar el nombre que recibe."
+      assert capturar_salida(saludo, "Eva") == "", "La función no debe mostrar nada: solo devolver el texto."
+
+  - id: area-rectangulo
+    type: python
+    title: Área de un rectángulo
+    difficulty: 1
+    prompt: >-
+      Define la función `area(base, altura)` que devuelva el área de un rectángulo. Por
+      ejemplo, `area(3, 4)` devuelve `12`.
+    starterCode: |
+      # Define aquí la función area
+
+      print(area(3, 4))
+    solution: |
+      def area(base, altura):
+          return base * altura
+
+      print(area(3, 4))
+    hints:
+      - 'La primera línea es `def area(base, altura):` y el cuerpo va indentado.'
+      - El área es la base por la altura. Devuélvela con `return`.
+    mistakes:
+      - |
+        def area(base, altura):
+            return base + altura
+
+        print(area(3, 4))
+      - |
+        def area(base, altura):
+            print(base * altura)
+
+        print(area(3, 4))
+    tests: |
+      assert area(3, 4) == 12, f"area(3, 4) debe devolver 12 y devolvió {area(3, 4)!r}."
+      assert area(2, 2) == 4, f"area(2, 2) debe devolver 4 y devolvió {area(2, 2)!r}."
+      assert area(5, 0) == 0, "Un rectángulo de altura 0 tiene área 0."
+      assert area(2.5, 4) == 10, "La función también debe funcionar con decimales."
+
+  - id: es-par
+    type: python
+    title: ¿Es par?
+    difficulty: 2
+    prompt: >-
+      Define la función `es_par(n)` que devuelva `True` si `n` es par y `False` si no.
+      Después úsala: el programa lee un número entero y muestra `par` o `impar`.
+    stdin: ['7']
+    starterCode: |
+      # Define aquí la función es_par
+
+      numero = int(input())
+    solution: |
+      def es_par(n):
+          return n % 2 == 0
+
+      numero = int(input())
+      if es_par(numero):
+          print("par")
+      else:
+          print("impar")
+    hints:
+      - Un número es par si el resto de dividirlo entre 2 es 0.
+      - 'La comparación `n % 2 == 0` ya vale `True` o `False`: puedes devolverla directamente.'
+      - 'Usa la función en un `if`: `if es_par(numero):`.'
+    mistakes:
+      - |
+        def es_par(n):
+            return n % 2
+
+        numero = int(input())
+        if es_par(numero):
+            print("par")
+        else:
+            print("impar")
+      - |
+        def es_par(n):
+            if n % 2 == 0:
+                return "par"
+            return "impar"
+
+        numero = int(input())
+        print(es_par(numero))
+    tests: |
+      for n, esperado in [(4, True), (7, False), (0, True), (-3, False)]:
+          assert es_par(n) is esperado, f"es_par({n}) debe devolver {esperado} y devolvió {es_par(n)!r}."
+      for entrada, esperado in [("7", "impar"), ("10", "par"), ("0", "par")]:
+          obtenido = ultima_linea(ejecutar_con([entrada]))
+          assert obtenido == esperado, f"Con {entrada} el programa debe mostrar '{esperado}' y mostró '{obtenido}'."
+
+  - id: promedio
+    type: python
+    title: Promedio seguro
+    difficulty: 2
+    prompt: >-
+      Define la función `promedio(numeros)` que reciba una lista de números y devuelva su
+      promedio. Si la lista está vacía, debe devolver `0` (en lugar de provocar un error).
+    starterCode: |
+      def promedio(numeros):
+          return sum(numeros) / len(numeros)
+
+      print(promedio([8, 9, 10]))
+      print(promedio([]))
+    solution: |
+      def promedio(numeros):
+          if len(numeros) == 0:
+              return 0
+          return sum(numeros) / len(numeros)
+
+      print(promedio([8, 9, 10]))
+      print(promedio([]))
+    hints:
+      - Ejecuta el código inicial y lee el error de la última línea.
+      - Antes de dividir, revisa si la lista está vacía y, en ese caso, devuelve `0`.
+      - Recuerda que `return` termina la función, así que no hace falta un `else`.
+    mistakes:
+      - |
+        def promedio(numeros):
+            if len(numeros) == 0:
+                return 0
+            return sum(numeros) / 3
+
+        print(promedio([8, 9, 10]))
+        print(promedio([]))
+    tests: |
+      assert promedio([8, 9, 10]) == 9, f"promedio([8, 9, 10]) debe devolver 9 y devolvió {promedio([8, 9, 10])!r}."
+      assert promedio([5]) == 5, "El promedio de un solo número es ese número."
+      assert promedio([1, 2]) == 1.5, f"promedio([1, 2]) debe devolver 1.5 y devolvió {promedio([1, 2])!r}."
+      assert promedio([]) == 0, "Con una lista vacía, la función debe devolver 0."
+
+  - id: contar-vocales
+    type: python
+    title: Contar vocales
+    difficulty: 3
+    prompt: >-
+      Define la función `contar_vocales(texto)` que devuelva cuántas vocales (`a`, `e`, `i`,
+      `o`, `u`, sin acento) tiene un texto, sin distinguir mayúsculas de minúsculas. Luego
+      define `mas_vocales(palabras)`, que reciba una lista de palabras y devuelva la que
+      tiene más vocales (si hay empate, la primera). Debe usar `contar_vocales`.
+    starterCode: |
+      def contar_vocales(texto):
+          pass
+
+
+      def mas_vocales(palabras):
+          pass
+
+
+      print(contar_vocales("Murcielago"))
+      print(mas_vocales(["sol", "abuela", "tren"]))
+    solution: |
+      def contar_vocales(texto):
+          total = 0
+          for letra in texto.lower():
+              if letra in "aeiou":
+                  total += 1
+          return total
+
+
+      def mas_vocales(palabras):
+          mejor = palabras[0]
+          for palabra in palabras:
+              if contar_vocales(palabra) > contar_vocales(mejor):
+                  mejor = palabra
+          return mejor
+
+
+      print(contar_vocales("Murcielago"))
+      print(mas_vocales(["sol", "abuela", "tren"]))
+    hints:
+      - Recorre el texto letra por letra y suma 1 cuando la letra esté en `"aeiou"`.
+      - Convierte el texto a minúsculas con `lower()` antes de recorrerlo.
+      - >-
+        En `mas_vocales`, guarda la mejor palabra vista hasta ahora y reemplázala solo si la
+        nueva tiene estrictamente más vocales (así, en un empate gana la primera).
+    mistakes:
+      - |
+        def contar_vocales(texto):
+            total = 0
+            for letra in texto:
+                if letra in "aeiou":
+                    total += 1
+            return total
+
+
+        def mas_vocales(palabras):
+            mejor = palabras[0]
+            for palabra in palabras:
+                if contar_vocales(palabra) > contar_vocales(mejor):
+                    mejor = palabra
+            return mejor
+      - |
+        def contar_vocales(texto):
+            total = 0
+            for letra in texto.lower():
+                if letra in "aeiou":
+                    total += 1
+            return total
+
+
+        def mas_vocales(palabras):
+            mejor = palabras[0]
+            for palabra in palabras:
+                if contar_vocales(palabra) >= contar_vocales(mejor):
+                    mejor = palabra
+            return mejor
+    tests: |
+      for texto, esperado in [("Murcielago", 5), ("AEIOU", 5), ("ritmo", 2), ("xyz", 0), ("", 0)]:
+          obtenido = contar_vocales(texto)
+          assert obtenido == esperado, f"contar_vocales({texto!r}) debe devolver {esperado} y devolvió {obtenido!r}."
+      assert mas_vocales(["sol", "abuela", "tren"]) == "abuela", "mas_vocales(['sol', 'abuela', 'tren']) debe devolver 'abuela'."
+      assert mas_vocales(["casa", "mesa", "pez"]) == "casa", "En caso de empate debe devolverse la primera palabra."
+      assert mas_vocales(["AEREO", "luz"]) == "AEREO", "Las mayúsculas también cuentan como vocales."
+      assert "contar_vocales(" in codigo.split("def mas_vocales")[1], "mas_vocales debe usar la función contar_vocales."
+
+  - id: return-vs-print
+    type: quiz
+    title: return y print
+    difficulty: 1
+    prompt: 'Si `def triple(n): print(n * 3)`, ¿qué valor queda en `x` después de `x = triple(2)`?'
+    options:
+      - '6'
+      - 'None'
+      - '"6"'
+      - 'Se produce un error'
+    answer: 1
+    explanation: 'La función muestra `6` en pantalla, pero no tiene `return`, así que devuelve `None`. Para que `x` valga 6 habría que escribir `return n * 3`.'
+
+  - id: despues-de-return
+    type: quiz
+    title: Después de return
+    difficulty: 2
+    prompt: 'En una función, ¿qué ocurre con las líneas que están después de un `return` que sí se ejecutó?'
+    options:
+      - 'Se ejecutan antes de devolver el valor'
+      - 'No se ejecutan, porque `return` termina la función'
+      - 'Producen un error de sintaxis'
+      - 'Se ejecutan la siguiente vez que se llama a la función'
+    answer: 1
+    explanation: '`return` devuelve el valor y termina la función en ese punto. Por eso se puede usar para salir antes de tiempo, por ejemplo dentro de un `if`.'

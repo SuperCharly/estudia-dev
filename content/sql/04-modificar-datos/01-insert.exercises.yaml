@@ -1,0 +1,160 @@
+exercises:
+  - id: nuevo-producto
+    type: sql
+    title: Un producto nuevo
+    difficulty: 1
+    dataset: tienda
+    checkQuery: SELECT id, nombre, categoria, precio, stock, activo FROM productos ORDER BY id;
+    prompt: >-
+      Agrega a `productos` un producto con id `20`, nombre `Agenda semanal`, categoría
+      `Papelería`, precio `120.00`, stock `30` y activo (`TRUE`).
+    starterCode: |
+      INSERT INTO productos (id, nombre, categoria, precio, stock, activo)
+      VALUES ();
+    solution: |
+      INSERT INTO productos (id, nombre, categoria, precio, stock, activo)
+      VALUES (20, 'Agenda semanal', 'Papelería', 120.00, 30, TRUE);
+    hints:
+      - Escribe los valores en el mismo orden que la lista de columnas.
+      - Los textos van entre comillas simples; los números y `TRUE`, sin comillas.
+    mistakes:
+      - |
+        INSERT INTO productos (id, nombre, categoria, precio, stock, activo)
+        VALUES (20, 'Papelería', 'Agenda semanal', 120.00, 30, TRUE);
+      - |
+        INSERT INTO productos (id, nombre, categoria, precio, stock, activo)
+        VALUES (20, 'Agenda semanal', 'Papelería', 30, 120, TRUE);
+
+  - id: valores-por-defecto
+    type: sql
+    title: Dejar que la tabla ponga los valores
+    difficulty: 2
+    dataset: tienda
+    checkQuery: SELECT id, nombre, categoria, precio, stock, activo FROM productos ORDER BY id;
+    prompt: >-
+      Agrega el producto con id `21`, nombre `Regla de 30 cm`, categoría `Papelería` y
+      precio `18.50`, sin indicar `stock` ni `activo`, para que tomen sus valores por
+      defecto.
+    starterCode: ''
+    solution: |
+      INSERT INTO productos (id, nombre, categoria, precio)
+      VALUES (21, 'Regla de 30 cm', 'Papelería', 18.50);
+    hints:
+      - En la lista de columnas escribe solo las que vas a indicar.
+      - 'La lista queda así: `(id, nombre, categoria, precio)`.'
+    mistakes:
+      - |
+        INSERT INTO productos (id, nombre, categoria, precio, stock, activo)
+        VALUES (21, 'Regla de 30 cm', 'Papelería', 18.50, NULL, NULL);
+      - |
+        INSERT INTO productos (id, nombre, categoria)
+        VALUES (21, 'Regla de 30 cm', 'Papelería');
+
+  - id: varios-clientes
+    type: sql
+    title: Dos clientes a la vez
+    difficulty: 2
+    dataset: tienda
+    checkQuery: SELECT id, nombre, email, ciudad, fecha_registro FROM clientes ORDER BY id;
+    prompt: >-
+      Con una sola sentencia, agrega dos clientes registrados el `2025-10-01`: el `20`,
+      `Irene Campos`, con email `irene@example.com` y ciudad `Puebla`; y el `21`,
+      `Hugo Rey`, de `Tijuana`, que no dio su email.
+    starterCode: |
+      INSERT INTO clientes (id, nombre, email, ciudad, fecha_registro) VALUES
+    solution: |
+      INSERT INTO clientes (id, nombre, email, ciudad, fecha_registro) VALUES
+        (20, 'Irene Campos', 'irene@example.com', 'Puebla',  '2025-10-01'),
+        (21, 'Hugo Rey',     NULL,                'Tijuana', '2025-10-01');
+    hints:
+      - Separa las dos filas con una coma y termina con punto y coma.
+      - Un dato desconocido se representa con `NULL`, sin comillas.
+    mistakes:
+      - |
+        INSERT INTO clientes (id, nombre, email, ciudad, fecha_registro) VALUES
+          (20, 'Irene Campos', 'irene@example.com', 'Puebla',  '2025-10-01'),
+          (21, 'Hugo Rey',     '',                  'Tijuana', '2025-10-01');
+      - |
+        INSERT INTO clientes (id, nombre, email, ciudad, fecha_registro) VALUES
+          (20, 'Irene Campos', 'irene@example.com', 'Puebla',  '2025-10-01'),
+          (21, 'Hugo Rey',     'NULL',              'Tijuana', '2025-10-01');
+      - |
+        INSERT INTO clientes (id, nombre, email, ciudad, fecha_registro) VALUES
+          (20, 'Irene Campos', 'irene@example.com', 'Puebla',  '2025-10-01'),
+          (21, 'Hugo Rey',     'Tijuana',           NULL,      '2025-10-01');
+
+  - id: pedido-completo
+    type: sql
+    title: Registrar un pedido completo
+    difficulty: 3
+    dataset: tienda
+    checkQuery: |
+      SELECT p.id, p.cliente_id, p.fecha, p.estado, d.producto_id, d.cantidad, d.precio_unitario
+      FROM pedidos p
+      LEFT JOIN pedido_detalle d ON d.pedido_id = p.id
+      ORDER BY p.id, d.producto_id;
+    prompt: >-
+      Registra el pedido `20` del cliente `2`, con fecha `2025-10-05` y estado `pendiente`.
+      El pedido lleva 3 unidades del producto `1` y 1 unidad del producto `6`. El
+      `precio_unitario` de cada línea debe ser el precio que el producto tiene ahora en la
+      tabla `productos` (no lo escribas a mano).
+    starterCode: |
+      INSERT INTO pedidos (id, cliente_id, fecha, estado)
+      VALUES (20, 2, '2025-10-05', 'pendiente');
+    solution: |
+      INSERT INTO pedidos (id, cliente_id, fecha, estado)
+      VALUES (20, 2, '2025-10-05', 'pendiente');
+
+      INSERT INTO pedido_detalle (pedido_id, producto_id, cantidad, precio_unitario)
+      SELECT 20, id, 3, precio FROM productos WHERE id = 1;
+
+      INSERT INTO pedido_detalle (pedido_id, producto_id, cantidad, precio_unitario)
+      SELECT 20, id, 1, precio FROM productos WHERE id = 6;
+    hints:
+      - El pedido debe existir antes de insertar sus líneas en `pedido_detalle`.
+      - Para tomar el precio de la tabla, usa `INSERT INTO … SELECT …` en lugar de `VALUES`.
+      - 'Una línea: `SELECT 20, id, 3, precio FROM productos WHERE id = 1;`.'
+    mistakes:
+      # Precios escritos a mano: coincide con los datos visibles, no con los de verificación.
+      - |
+        INSERT INTO pedidos (id, cliente_id, fecha, estado)
+        VALUES (20, 2, '2025-10-05', 'pendiente');
+        INSERT INTO pedido_detalle (pedido_id, producto_id, cantidad, precio_unitario) VALUES
+          (20, 1, 3, 8.50),
+          (20, 6, 1, 249.90);
+      - |
+        INSERT INTO pedido_detalle (pedido_id, producto_id, cantidad, precio_unitario)
+        SELECT 20, id, 3, precio FROM productos WHERE id = 1;
+        INSERT INTO pedidos (id, cliente_id, fecha, estado)
+        VALUES (20, 2, '2025-10-05', 'pendiente');
+      - |
+        INSERT INTO pedidos (id, cliente_id, fecha, estado)
+        VALUES (20, 2, '2025-10-05', 'pendiente');
+        INSERT INTO pedido_detalle (pedido_id, producto_id, cantidad, precio_unitario)
+        SELECT 20, id, 3, precio FROM productos WHERE id IN (1, 6);
+
+  - id: insert-rechazado
+    type: quiz
+    title: ¿Qué inserción falla?
+    difficulty: 2
+    prompt: 'En `productos`, `nombre` es `NOT NULL` y `stock` tiene `DEFAULT 0`. ¿Cuál de estas sentencias produce un error?'
+    options:
+      - "`INSERT INTO productos (id, nombre, categoria, precio) VALUES (30, 'Clip', 'Papelería', 2);`"
+      - "`INSERT INTO productos (id, categoria, precio) VALUES (30, 'Papelería', 2);`"
+      - "`INSERT INTO productos (id, nombre, categoria, precio, stock) VALUES (30, 'Clip', 'Papelería', 2, 0);`"
+      - "`INSERT INTO productos (id, nombre, categoria, precio) VALUES (30, '', 'Papelería', 2);`"
+    answer: 1
+    explanation: 'Al omitir `nombre`, la columna recibiría `NULL`, y `NOT NULL` lo impide. Omitir `stock` es válido porque tiene valor por defecto. Un texto vacío no es `NULL`, así que la última también se acepta (aunque no sea un buen dato).'
+
+  - id: orden-de-insercion
+    type: quiz
+    title: ¿Qué va primero?
+    difficulty: 1
+    prompt: 'Quieres registrar un cliente nuevo, su primer pedido y las líneas de ese pedido. ¿En qué orden deben insertarse?'
+    options:
+      - 'Líneas de detalle, pedido, cliente'
+      - 'Pedido, cliente, líneas de detalle'
+      - 'Cliente, pedido, líneas de detalle'
+      - 'El orden no importa'
+    answer: 2
+    explanation: 'Las claves foráneas exigen que la fila referenciada exista: el pedido apunta a un cliente, y cada línea de detalle, a un pedido y a un producto.'

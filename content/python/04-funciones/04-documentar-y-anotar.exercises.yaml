@@ -1,0 +1,221 @@
+exercises:
+  - id: agregar-docstring
+    type: python
+    title: Documenta la función
+    difficulty: 1
+    prompt: >-
+      Agrega un docstring a la función `a_fahrenheit` que explique en una frase qué hace.
+      Debe ser la primera línea del cuerpo, entre comillas triples.
+    starterCode: |
+      def a_fahrenheit(celsius):
+          return celsius * 9 / 5 + 32
+
+      print(a_fahrenheit(100))
+    solution: |
+      def a_fahrenheit(celsius):
+          """Convierte una temperatura de grados Celsius a Fahrenheit."""
+          return celsius * 9 / 5 + 32
+
+      print(a_fahrenheit(100))
+    hints:
+      - El docstring va justo debajo de la línea `def`, con la misma indentación que el resto del cuerpo.
+      - 'Usa comillas triples: `"""Convierte ..."""`.'
+    mistakes:
+      - |
+        def a_fahrenheit(celsius):
+            # Convierte una temperatura de grados Celsius a Fahrenheit.
+            return celsius * 9 / 5 + 32
+
+        print(a_fahrenheit(100))
+      - |
+        def a_fahrenheit(celsius):
+            resultado = celsius * 9 / 5 + 32
+            """Convierte una temperatura de grados Celsius a Fahrenheit."""
+            return resultado
+
+        print(a_fahrenheit(100))
+    tests: |
+      doc = a_fahrenheit.__doc__
+      assert doc is not None, "La función no tiene docstring. Un comentario con # no cuenta: usa comillas triples en la primera línea del cuerpo."
+      assert len(doc.strip()) >= 10, "El docstring debe explicar qué hace la función."
+      assert a_fahrenheit(100) == 212, "La función debe seguir funcionando: a_fahrenheit(100) es 212."
+      assert a_fahrenheit(0) == 32, "La función debe seguir funcionando: a_fahrenheit(0) es 32."
+
+  - id: anotar-imc
+    type: python
+    title: Índice de masa corporal
+    difficulty: 2
+    prompt: >-
+      Define la función `imc(peso, altura)` que devuelva el peso dividido entre la altura al
+      cuadrado, redondeado a 1 decimal. Anota ambos parámetros y el valor devuelto como
+      `float`, y agrégale un docstring.
+    starterCode: |
+      def imc(peso, altura):
+          pass
+
+
+      print(imc(70, 1.75))
+    solution: |
+      def imc(peso: float, altura: float) -> float:
+          """Devuelve el índice de masa corporal redondeado a un decimal."""
+          return round(peso / altura ** 2, 1)
+
+
+      print(imc(70, 1.75))
+    hints:
+      - 'Cada parámetro se anota con dos puntos: `peso: float`.'
+      - 'El tipo devuelto se indica con una flecha antes de los dos puntos finales: `-> float:`.'
+      - El cálculo es `round(peso / altura ** 2, 1)`.
+    mistakes:
+      - |
+        def imc(peso, altura):
+            """Devuelve el índice de masa corporal redondeado a un decimal."""
+            return round(peso / altura ** 2, 1)
+      - |
+        def imc(peso: float, altura: float) -> float:
+            """Devuelve el índice de masa corporal redondeado a un decimal."""
+            return round(peso / altura * 2, 1)
+      - |
+        def imc(peso: float, altura: float):
+            """Devuelve el índice de masa corporal redondeado a un decimal."""
+            return round(peso / altura ** 2, 1)
+    tests: |
+      assert imc(70, 1.75) == 22.9, f"imc(70, 1.75) debe devolver 22.9 y devolvió {imc(70, 1.75)!r}."
+      assert imc(80, 2) == 20.0, f"imc(80, 2) debe devolver 20.0 y devolvió {imc(80, 2)!r}."
+      anotaciones = imc.__annotations__
+      assert anotaciones.get("peso") in (float, "float"), "Anota el parámetro peso como float."
+      assert anotaciones.get("altura") in (float, "float"), "Anota el parámetro altura como float."
+      assert anotaciones.get("return") in (float, "float"), "Anota el valor devuelto con -> float."
+      assert imc.__doc__ and imc.__doc__.strip(), "Agrega un docstring a la función."
+
+  - id: ordenar-por-precio
+    type: python
+    title: Ordenar por precio
+    difficulty: 2
+    prompt: >-
+      Define la función `ordenar_por_precio(productos)`, que reciba una lista de tuplas
+      `(nombre, precio)` y devuelva una lista nueva ordenada del más barato al más caro.
+      Usa `sorted` con el parámetro `key`.
+    starterCode: |
+      def ordenar_por_precio(productos):
+          return sorted(productos)
+
+
+      catalogo = [("pan", 12), ("café", 45), ("té", 30), ("agua", 15)]
+      print(ordenar_por_precio(catalogo))
+    solution: |
+      def ordenar_por_precio(productos):
+          return sorted(productos, key=lambda producto: producto[1])
+
+
+      catalogo = [("pan", 12), ("café", 45), ("té", 30), ("agua", 15)]
+      print(ordenar_por_precio(catalogo))
+    hints:
+      - Sin `key`, las tuplas se ordenan por su primer elemento (el nombre).
+      - '`key` recibe una función que, dado un producto, devuelve el valor por el que se ordena.'
+      - 'Con una lambda: `key=lambda producto: producto[1]`.'
+    mistakes:
+      - |
+        def ordenar_por_precio(productos):
+            return sorted(productos, key=lambda producto: producto[1], reverse=True)
+      - |
+        def ordenar_por_precio(productos):
+            productos.sort(key=lambda producto: producto[1])
+            return productos
+    tests: |
+      catalogo = [("pan", 12), ("café", 45), ("té", 30), ("agua", 15)]
+      resultado = ordenar_por_precio(catalogo)
+      assert resultado == [("pan", 12), ("agua", 15), ("té", 30), ("café", 45)], f"El resultado debe ir del más barato al más caro y se obtuvo {resultado!r}."
+      assert catalogo == [("pan", 12), ("café", 45), ("té", 30), ("agua", 15)], "La función no debe modificar la lista original: usa sorted, no sort."
+      assert ordenar_por_precio([("z", 1), ("a", 2)]) == [("z", 1), ("a", 2)], "Debe ordenarse por precio, no por nombre."
+      assert ordenar_por_precio([]) == [], "Con una lista vacía debe devolver una lista vacía."
+
+  - id: resumen-notas
+    type: python
+    title: Resumen de calificaciones
+    difficulty: 3
+    prompt: >-
+      Define `resumen(notas)`, que reciba un diccionario de nombres y calificaciones (por
+      ejemplo `{"Ana": 9.5, "Luis": 6.0}`) y devuelva un diccionario con tres claves:
+      `mejor` (el nombre con la calificación más alta), `peor` (el nombre con la más baja)
+      y `promedio` (redondeado a 2 decimales). Anota el parámetro como `dict[str, float]`,
+      el valor devuelto como `dict`, y agrega un docstring.
+    starterCode: |
+      def resumen(notas):
+          pass
+
+
+      print(resumen({"Ana": 9.5, "Luis": 6.0, "Eva": 8.0}))
+    solution: |
+      def resumen(notas: dict[str, float]) -> dict:
+          """Devuelve el mejor y el peor estudiante y el promedio del grupo."""
+          return {
+              "mejor": max(notas, key=notas.get),
+              "peor": min(notas, key=notas.get),
+              "promedio": round(sum(notas.values()) / len(notas), 2),
+          }
+
+
+      print(resumen({"Ana": 9.5, "Luis": 6.0, "Eva": 8.0}))
+    hints:
+      - '`max(notas)` compara las claves (los nombres). Necesitas comparar por calificación.'
+      - '`notas.get` es una función que, dado un nombre, devuelve su calificación: úsala como `key`.'
+      - El promedio se calcula con `sum(notas.values()) / len(notas)`.
+    mistakes:
+      - |
+        def resumen(notas: dict[str, float]) -> dict:
+            """Devuelve el mejor y el peor estudiante y el promedio del grupo."""
+            return {
+                "mejor": max(notas),
+                "peor": min(notas),
+                "promedio": round(sum(notas.values()) / len(notas), 2),
+            }
+      - |
+        def resumen(notas: dict[str, float]) -> dict:
+            """Devuelve el mejor y el peor estudiante y el promedio del grupo."""
+            return {
+                "mejor": max(notas.values()),
+                "peor": min(notas.values()),
+                "promedio": round(sum(notas.values()) / len(notas), 2),
+            }
+      - |
+        def resumen(notas):
+            return {
+                "mejor": max(notas, key=notas.get),
+                "peor": min(notas, key=notas.get),
+                "promedio": round(sum(notas.values()) / len(notas), 2),
+            }
+    tests: |
+      r = resumen({"Ana": 9.5, "Luis": 6.0, "Eva": 8.0})
+      assert isinstance(r, dict), "La función debe devolver un diccionario."
+      assert r == {"mejor": "Ana", "peor": "Luis", "promedio": 7.83}, f"Con Ana 9.5, Luis 6.0 y Eva 8.0 se esperaba mejor 'Ana', peor 'Luis' y promedio 7.83; se obtuvo {r!r}."
+      r = resumen({"Zoe": 5.0, "Beto": 10.0})
+      assert r == {"mejor": "Beto", "peor": "Zoe", "promedio": 7.5}, "Compara por calificación, no por nombre."
+      assert "notas" in resumen.__annotations__ and "return" in resumen.__annotations__, "Anota el parámetro y el valor devuelto."
+      assert resumen.__doc__ and resumen.__doc__.strip(), "Agrega un docstring a la función."
+
+  - id: anotaciones-no-validan
+    type: quiz
+    title: ¿Validan las anotaciones?
+    difficulty: 1
+    prompt: 'Dada `def doble(n: int) -> int: return n * 2`, ¿qué ocurre al ejecutar `doble("ab")`?'
+    options:
+      - 'Se produce un `TypeError`, porque `"ab"` no es un entero'
+      - 'Devuelve `"abab"`'
+      - 'Devuelve `None`'
+      - 'Python convierte `"ab"` a entero automáticamente'
+    answer: 1
+    explanation: 'Python no comprueba las anotaciones al ejecutar. La función multiplica el texto por 2 y devuelve `"abab"`. Las anotaciones sirven como documentación y para que el editor y herramientas externas detecten errores.'
+
+  - id: pasar-funcion
+    type: quiz
+    title: Pasar una función
+    difficulty: 2
+    prompt: '¿Cuál es la forma correcta de ordenar una lista de palabras por su longitud?'
+    options:
+      - '`sorted(palabras, key=len())`'
+      - '`sorted(palabras, key=len)`'
+      - '`sorted(palabras, len(palabras))`'
+      - '`sorted(len(palabras))`'
+    answer: 1
+    explanation: 'A `key` se le pasa la función en sí, sin paréntesis. `sorted` se encarga de llamarla con cada elemento. `len()` con paréntesis intentaría llamarla en ese momento, sin argumentos, y fallaría.'

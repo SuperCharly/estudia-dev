@@ -137,6 +137,38 @@ test.describe('ejercicios de SQL', () => {
   });
 });
 
+test.describe('ejercicios de SQL que modifican la base de datos', () => {
+  const LESSON = '/sql/04-modificar-datos/04-create-table/';
+
+  test('crear una tabla muestra qué reglas cumple y se aprueba al cumplirlas todas', async ({ page }) => {
+    await page.goto(LESSON);
+    const card = await openExercise(page, 'Tu primera tabla');
+
+    // El código inicial crea la tabla sin restricciones: se ejecuta, pero no cumple las reglas.
+    await card.getByRole('button', { name: 'Ejecutar' }).click();
+    await expect(card.getByRole('cell', { name: 'Rechaza un id repetido' })).toBeVisible();
+    await card.getByRole('button', { name: 'Comprobar' }).click();
+    await expect(card.getByText(/El resultado todavía no es el esperado/)).toBeVisible();
+
+    await typeCode(
+      page,
+      'Tu primera tabla',
+      'CREATE TABLE categorias (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL UNIQUE);',
+    );
+    await card.getByRole('button', { name: 'Comprobar' }).click();
+    await expect(card.getByText('¡Correcto!')).toBeVisible();
+    await expect(card.getByText('Completado').first()).toBeAttached();
+  });
+
+  test('si falta la tabla pedida, se explica en lugar de fallar', async ({ page }) => {
+    await page.goto(LESSON);
+    const card = await openExercise(page, 'Identificadores automáticos');
+    await typeCode(page, 'Identificadores automáticos', 'SELECT 1;');
+    await card.getByRole('button', { name: 'Comprobar' }).click();
+    await expect(card.getByText(/el resultado no se pudo revisar: .*proveedores/)).toBeVisible();
+  });
+});
+
 test.describe('progreso', () => {
   test('marcar la lectura y responder un quiz se refleja en la sección', async ({ page }) => {
     await page.goto(PYTHON_LESSON);
