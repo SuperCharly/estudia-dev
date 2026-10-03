@@ -1,0 +1,242 @@
+exercises:
+  - id: division-segura
+    type: python
+    title: División segura
+    difficulty: 1
+    prompt: >-
+      Modifica la función `dividir(a, b)` para que, si `b` es cero, capture el
+      `ZeroDivisionError` y devuelva `None` en lugar de detener el programa.
+    starterCode: |
+      def dividir(a, b):
+          return a / b
+
+      print(dividir(6, 3))
+      print(dividir(1, 0))
+    solution: |
+      def dividir(a, b):
+          try:
+              return a / b
+          except ZeroDivisionError:
+              return None
+
+      print(dividir(6, 3))
+      print(dividir(1, 0))
+    hints:
+      - Pon la división dentro de un bloque `try`.
+      - 'Agrega `except ZeroDivisionError:` y, dentro, `return None`.'
+    mistakes:
+      - |
+        def dividir(a, b):
+            try:
+                return a / b
+            except ZeroDivisionError:
+                return 0
+
+        print(dividir(6, 3))
+        print(dividir(1, 0))
+      - |
+        def dividir(a, b):
+            try:
+                return a // b
+            except ZeroDivisionError:
+                return None
+
+        print(dividir(6, 3))
+        print(dividir(1, 0))
+    tests: |
+      assert dividir(6, 3) == 2, f"dividir(6, 3) debe devolver 2.0 y devolvió {dividir(6, 3)!r}."
+      assert dividir(1, 4) == 0.25, f"dividir(1, 4) debe devolver 0.25 y devolvió {dividir(1, 4)!r}."
+      assert dividir(1, 0) is None, f"dividir(1, 0) debe devolver None y devolvió {dividir(1, 0)!r}."
+      assert "try" in codigo and "except" in codigo, "Usa try y except para capturar el error."
+
+  - id: leer-entero
+    type: python
+    title: Entrada que no falla
+    difficulty: 2
+    prompt: >-
+      El programa lee un texto y muestra el doble del número. Haz que, si el texto no es un
+      número entero, muestre `Entrada no válida` en lugar de detenerse con un error.
+    stdin: ['21']
+    starterCode: |
+      texto = input()
+      numero = int(texto)
+      print(numero * 2)
+    solution: |
+      texto = input()
+      try:
+          numero = int(texto)
+          print(numero * 2)
+      except ValueError:
+          print("Entrada no válida")
+    hints:
+      - '`int()` lanza un `ValueError` cuando el texto no es un entero.'
+      - Rodea la conversión con `try` y muestra el mensaje en `except ValueError:`.
+    mistakes:
+      - |
+        texto = input()
+        if texto.isdigit():
+            print(int(texto) * 2)
+        else:
+            print("Entrada no válida")
+      - |
+        texto = input()
+        try:
+            numero = float(texto)
+            print(numero * 2)
+        except ValueError:
+            print("Entrada no válida")
+    tests: |
+      casos = [("21", "42"), ("-3", "-6"), ("0", "0"), ("abc", "Entrada no válida"), ("4.5", "Entrada no válida"), ("", "Entrada no válida")]
+      for entrada, esperado in casos:
+          obtenido = ultima_linea(ejecutar_con([entrada]))
+          assert obtenido == esperado, f"Con la entrada '{entrada}' se esperaba '{esperado}' y se mostró '{obtenido}'."
+
+  - id: a-numero
+    type: python
+    title: Convertir con valor de respaldo
+    difficulty: 2
+    prompt: >-
+      Define `a_numero(valor, por_defecto=0)`, que devuelva `float(valor)` o, si la
+      conversión falla, el valor por defecto. Debe funcionar tanto si `valor` es un texto
+      no numérico (`ValueError`) como si es `None` (`TypeError`).
+    starterCode: |
+      def a_numero(valor, por_defecto=0):
+          return float(valor)
+
+      print(a_numero("3.5"))
+      print(a_numero("abc"))
+      print(a_numero(None))
+    solution: |
+      def a_numero(valor, por_defecto=0):
+          try:
+              return float(valor)
+          except (ValueError, TypeError):
+              return por_defecto
+
+      print(a_numero("3.5"))
+      print(a_numero("abc"))
+      print(a_numero(None))
+    hints:
+      - Ejecuta el código inicial y fíjate en el tipo de excepción de cada caso.
+      - 'Para capturar dos tipos con el mismo tratamiento, usa una tupla: `except (ValueError, TypeError):`.'
+    mistakes:
+      - |
+        def a_numero(valor, por_defecto=0):
+            try:
+                return float(valor)
+            except ValueError:
+                return por_defecto
+      - |
+        def a_numero(valor, por_defecto=0):
+            try:
+                return float(valor)
+            except (ValueError, TypeError):
+                return 0
+    tests: |
+      assert a_numero("3.5") == 3.5, f"a_numero('3.5') debe devolver 3.5 y devolvió {a_numero('3.5')!r}."
+      assert a_numero(7) == 7.0, "a_numero(7) debe devolver 7.0."
+      assert a_numero("abc") == 0, "a_numero('abc') debe devolver el valor por defecto, 0."
+      assert a_numero("abc", -1) == -1, "a_numero('abc', -1) debe devolver -1."
+      try:
+          resultado = a_numero(None, 5)
+      except TypeError:
+          assert False, "a_numero(None, 5) lanzó un TypeError: captura también esa excepción."
+      assert resultado == 5, "a_numero(None, 5) debe devolver 5."
+
+  - id: total-del-pedido
+    type: python
+    title: Un pedido con datos dudosos
+    difficulty: 3
+    prompt: >-
+      Define `total_pedido(precios, pedido)`. `precios` es un diccionario de producto a
+      precio y `pedido` es una lista de tuplas `(producto, cantidad)`, donde la cantidad
+      llega como texto. La función devuelve una tupla `(total, omitidos)`. El total suma
+      precio por cantidad de las líneas válidas, y `omitidos` es la lista de productos que
+      no se pudieron sumar porque no están en `precios` o porque su cantidad no es un
+      entero. Una línea incorrecta no debe impedir que se sumen las demás.
+    starterCode: |
+      def total_pedido(precios, pedido):
+          total = 0
+          omitidos = []
+          for producto, cantidad in pedido:
+              total += precios[producto] * int(cantidad)
+          return total, omitidos
+
+
+      precios = {"café": 45, "té": 30, "pan": 12}
+      print(total_pedido(precios, [("café", "2"), ("jugo", "1"), ("pan", "tres"), ("té", "1")]))
+    solution: |
+      def total_pedido(precios, pedido):
+          total = 0
+          omitidos = []
+          for producto, cantidad in pedido:
+              try:
+                  total += precios[producto] * int(cantidad)
+              except (KeyError, ValueError):
+                  omitidos.append(producto)
+          return total, omitidos
+
+
+      precios = {"café": 45, "té": 30, "pan": 12}
+      print(total_pedido(precios, [("café", "2"), ("jugo", "1"), ("pan", "tres"), ("té", "1")]))
+    hints:
+      - Un producto inexistente provoca un `KeyError` y una cantidad no numérica, un `ValueError`.
+      - El `try` debe ir dentro del `for`, para que un error solo afecte a esa línea.
+      - En el `except`, agrega el producto a `omitidos`.
+    mistakes:
+      - |
+        def total_pedido(precios, pedido):
+            total = 0
+            omitidos = []
+            try:
+                for producto, cantidad in pedido:
+                    total += precios[producto] * int(cantidad)
+            except (KeyError, ValueError):
+                omitidos.append(producto)
+            return total, omitidos
+      - |
+        def total_pedido(precios, pedido):
+            total = 0
+            omitidos = []
+            for producto, cantidad in pedido:
+                try:
+                    total += precios[producto] * int(cantidad)
+                except KeyError:
+                    omitidos.append(producto)
+            return total, omitidos
+    tests: |
+      precios = {"café": 45, "té": 30, "pan": 12}
+      r = total_pedido(precios, [("café", "2"), ("jugo", "1"), ("pan", "tres"), ("té", "1")])
+      assert r == (120, ["jugo", "pan"]), f"Con café x2, jugo x1, pan x'tres' y té x1 se esperaba (120, ['jugo', 'pan']) y se obtuvo {r!r}."
+      r = total_pedido(precios, [("pan", "10")])
+      assert r == (120, []), f"Sin errores, omitidos debe ser una lista vacía; se obtuvo {r!r}."
+      r = total_pedido(precios, [])
+      assert r == (0, []), "Con un pedido vacío debe devolver (0, [])."
+      r = total_pedido(precios, [("agua", "x"), ("té", "2")])
+      assert r == (60, ["agua"]), f"Un error en la primera línea no debe impedir sumar las siguientes; se obtuvo {r!r}."
+
+  - id: que-se-ejecuta
+    type: quiz
+    title: ¿Qué bloques se ejecutan?
+    difficulty: 2
+    prompt: 'En un `try` con `except ValueError`, `else` y `finally`, el código del `try` termina sin ningún error. ¿Qué bloques se ejecutan después?'
+    options:
+      - 'Solo `finally`'
+      - '`except` y `finally`'
+      - '`else` y `finally`'
+      - 'Ninguno'
+    answer: 2
+    explanation: '`else` se ejecuta cuando el `try` termina sin excepción, y `finally` se ejecuta siempre. El bloque `except` solo se ejecuta si ocurre la excepción indicada.'
+
+  - id: except-generico
+    type: quiz
+    title: El except que captura todo
+    difficulty: 1
+    prompt: '¿Por qué se desaconseja escribir `except:` sin indicar el tipo de excepción?'
+    options:
+      - 'Porque es un error de sintaxis'
+      - 'Porque hace el programa más lento'
+      - 'Porque también captura errores inesperados y oculta fallos del código'
+      - 'Porque solo captura el `ValueError`'
+    answer: 2
+    explanation: 'Un `except:` genérico trata igual un dato incorrecto del usuario que un nombre mal escrito en tu código. El fallo queda oculto y es mucho más difícil de encontrar.'

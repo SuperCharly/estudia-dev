@@ -100,7 +100,7 @@ futuro hay certificados, se evaluará en un servidor con sandbox.
 - [x] Módulo 2 de Python (control de flujo) y de SQL (agregación)
 - [x] Módulo 3 de Python (estructuras de datos) y de SQL (relaciones entre tablas)
 - [x] Módulo 4 de Python (funciones) y de SQL (modificar datos y crear tablas)
-- [ ] Módulo 5 de Python (errores y módulos) y de SQL (mini-proyecto: biblioteca)
+- [x] Módulo 5 de Python (errores y módulos) y de SQL (mini-proyecto: biblioteca)
 - [ ] Fase 0: script de catálogo (respetando robots.txt) y verificación de licencias
 - [ ] Fase 2: cuentas con Supabase (RLS) y sincronización del progreso
 - [ ] Fase 3: pipeline de borradores con IA + revisión humana

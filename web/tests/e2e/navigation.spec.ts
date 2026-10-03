@@ -14,7 +14,9 @@ test.describe('navegación', () => {
     await page.getByRole('link', { name: 'Python', exact: true }).first().click();
     await expect(page).toHaveURL(/\/python\/$/);
     await expect(page.getByRole('heading', { name: 'Primeros pasos' })).toBeVisible();
-    await expect(page.getByText('Próximamente').first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Errores y módulos' })).toBeVisible();
+    // Todos los módulos de la ruta tienen contenido.
+    await expect(page.getByText('Próximamente')).toHaveCount(0);
     await expectAccessible(page);
 
     await page.getByRole('link', { name: /Empezar: Hola, Python/ }).click();

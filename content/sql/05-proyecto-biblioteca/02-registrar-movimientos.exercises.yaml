@@ -1,0 +1,160 @@
+exercises:
+  - id: alta-de-libro
+    type: sql
+    title: Llega un libro nuevo
+    difficulty: 1
+    dataset: biblioteca
+    checkQuery: |
+      SELECT l.id, l.titulo, a.nombre AS autor, a.pais, l.genero, l.anio, l.ejemplares
+      FROM libros l
+      JOIN autores a ON a.id = l.autor_id
+      ORDER BY l.id;
+    prompt: >-
+      Registra a la autora `Laura Esquivel`, de `México`, con id `20`, y su libro
+      `Como agua para chocolate`, con id `20`, género `Novela` y año `1989`. La biblioteca
+      recibió 2 ejemplares.
+    starterCode: |
+      INSERT INTO libros (id, titulo, autor_id, genero, anio, ejemplares)
+      VALUES (20, 'Como agua para chocolate', 20, 'Novela', 1989, 2);
+    solution: |
+      INSERT INTO autores (id, nombre, pais)
+      VALUES (20, 'Laura Esquivel', 'México');
+
+      INSERT INTO libros (id, titulo, autor_id, genero, anio, ejemplares)
+      VALUES (20, 'Como agua para chocolate', 20, 'Novela', 1989, 2);
+    hints:
+      - Ejecuta el código inicial y lee el error. El libro hace referencia a un autor que aún no existe.
+      - Inserta primero la fila de `autores` y después la de `libros`.
+    mistakes:
+      - |
+        INSERT INTO autores (id, nombre, pais)
+        VALUES (20, 'Laura Esquivel', 'México');
+        INSERT INTO libros (id, titulo, autor_id, genero, anio)
+        VALUES (20, 'Como agua para chocolate', 20, 'Novela', 1989);
+      - |
+        INSERT INTO autores (id, nombre)
+        VALUES (20, 'Laura Esquivel');
+        INSERT INTO libros (id, titulo, autor_id, genero, anio, ejemplares)
+        VALUES (20, 'Como agua para chocolate', 20, 'Novela', 1989, 2);
+
+  - id: nuevo-prestamo
+    type: sql
+    title: Registrar un préstamo
+    difficulty: 2
+    dataset: biblioteca
+    checkQuery: SELECT id, libro_id, socio_id, fecha_prestamo, fecha_limite, fecha_devolucion FROM prestamos ORDER BY id;
+    prompt: >-
+      Hoy, `2025-10-06`, el socio `4` se lleva el libro `2`. Registra el préstamo con id
+      `30`. La fecha límite es 14 días después de la fecha del préstamo, y el libro aún no
+      se ha devuelto.
+    starterCode: |
+      INSERT INTO prestamos (id, libro_id, socio_id, fecha_prestamo, fecha_limite)
+      VALUES ();
+    solution: |
+      INSERT INTO prestamos (id, libro_id, socio_id, fecha_prestamo, fecha_limite)
+      VALUES (30, 2, 4, '2025-10-06', DATE '2025-10-06' + 14);
+    hints:
+      - Los valores van en el mismo orden que las columnas. Fíjate en que el libro va antes que el socio.
+      - "La fecha límite puede calcularse con `DATE '2025-10-06' + 14`."
+      - Al no mencionar `fecha_devolucion`, queda en `NULL`.
+    mistakes:
+      - |
+        INSERT INTO prestamos (id, libro_id, socio_id, fecha_prestamo, fecha_limite)
+        VALUES (30, 4, 2, '2025-10-06', DATE '2025-10-06' + 14);
+      - |
+        INSERT INTO prestamos (id, libro_id, socio_id, fecha_prestamo, fecha_limite)
+        VALUES (30, 2, 4, '2025-10-06', '2025-10-14');
+      - |
+        INSERT INTO prestamos (id, libro_id, socio_id, fecha_prestamo, fecha_limite, fecha_devolucion)
+        VALUES (30, 2, 4, '2025-10-06', '2025-10-20', '2025-10-20');
+
+  - id: devolucion
+    type: sql
+    title: Registrar una devolución
+    difficulty: 2
+    dataset: biblioteca
+    checkQuery: SELECT id, socio_id, fecha_prestamo, fecha_devolucion FROM prestamos ORDER BY id;
+    prompt: >-
+      Hoy, `2025-10-06`, el socio `3` devuelve todos los libros que tiene en préstamo.
+      Regístralo sin alterar las fechas de los préstamos que ya había devuelto antes.
+    starterCode: |
+      UPDATE prestamos
+      SET fecha_devolucion = '2025-10-06'
+      WHERE socio_id = 3;
+    solution: |
+      UPDATE prestamos
+      SET fecha_devolucion = '2025-10-06'
+      WHERE socio_id = 3
+        AND fecha_devolucion IS NULL;
+    hints:
+      - Ejecuta el código inicial y revisa los préstamos antiguos del socio 3. Sus fechas de devolución cambiaron.
+      - Limita el cambio a los préstamos activos, que son los que tienen `fecha_devolucion IS NULL`.
+    mistakes:
+      - |
+        UPDATE prestamos
+        SET fecha_devolucion = '2025-10-06'
+        WHERE fecha_devolucion IS NULL;
+      - |
+        DELETE FROM prestamos
+        WHERE socio_id = 3
+          AND fecha_devolucion IS NULL;
+
+  - id: prorroga
+    type: sql
+    title: Prórroga para las novelas
+    difficulty: 3
+    dataset: biblioteca
+    checkQuery: SELECT id, libro_id, fecha_limite, fecha_devolucion FROM prestamos ORDER BY id;
+    prompt: >-
+      La biblioteca concede 7 días más para devolver las novelas. Amplía en 7 días la fecha
+      límite de los préstamos activos de libros del género `Novela`. Los préstamos ya
+      devueltos y los de otros géneros no deben cambiar.
+    starterCode: |
+      UPDATE prestamos
+      SET fecha_limite = fecha_limite + 7
+      WHERE fecha_devolucion IS NULL;
+    solution: |
+      UPDATE prestamos
+      SET fecha_limite = fecha_limite + 7
+      WHERE fecha_devolucion IS NULL
+        AND libro_id IN (SELECT id FROM libros WHERE genero = 'Novela');
+    hints:
+      - El género está en la tabla `libros`.
+      - Una subconsulta puede devolver los `id` de los libros que son novelas.
+      - "Agrega `AND libro_id IN (SELECT id FROM libros WHERE genero = 'Novela')`."
+    mistakes:
+      - |
+        UPDATE prestamos
+        SET fecha_limite = fecha_limite + 7
+        WHERE libro_id IN (SELECT id FROM libros WHERE genero = 'Novela');
+      - |
+        UPDATE prestamos
+        SET fecha_limite = DATE '2025-10-06' + 7
+        WHERE fecha_devolucion IS NULL
+          AND libro_id IN (SELECT id FROM libros WHERE genero = 'Novela');
+
+  - id: aritmetica-de-fechas
+    type: quiz
+    title: Cuentas con fechas
+    difficulty: 1
+    prompt: "¿Qué devuelve `SELECT DATE '2025-10-20' - DATE '2025-10-06';`?"
+    options:
+      - 'La fecha `2025-10-14`'
+      - 'El número `14`'
+      - 'El texto `14 días`'
+      - 'Un error, porque las fechas no se pueden restar'
+    answer: 1
+    explanation: 'Restar dos fechas da el número de días que hay entre ellas, como un entero. En cambio, sumar un entero a una fecha da otra fecha.'
+
+  - id: devolver-no-es-borrar
+    type: quiz
+    title: ¿Por qué no borrar?
+    difficulty: 2
+    prompt: 'Cuando un socio devuelve un libro, se actualiza `fecha_devolucion` en lugar de eliminar la fila de `prestamos`. ¿Cuál es la razón principal?'
+    options:
+      - '`DELETE` no funciona en tablas con claves foráneas'
+      - 'Se conserva el historial, que permite saber qué se presta más y quién devuelve tarde'
+      - '`UPDATE` es más rápido que `DELETE`'
+      - 'Las filas eliminadas siguen ocupando espacio'
+    answer: 1
+    explanation: 'Si se borraran los préstamos devueltos, no quedaría rastro de la actividad de la biblioteca. Completar la fila con la fecha de devolución conserva la información para los reportes.'

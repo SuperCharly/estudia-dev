@@ -1,0 +1,292 @@
+exercises:
+  - id: validar-edad
+    type: python
+    title: Validar una edad
+    difficulty: 1
+    prompt: >-
+      Define `validar_edad(edad)`, que devuelva la edad si está entre 0 y 120 (ambos
+      incluidos) y lance un `ValueError` con un mensaje explicativo en caso contrario.
+    starterCode: |
+      def validar_edad(edad):
+          return edad
+
+      print(validar_edad(30))
+    solution: |
+      def validar_edad(edad):
+          if edad < 0 or edad > 120:
+              raise ValueError("La edad debe estar entre 0 y 120")
+          return edad
+
+      print(validar_edad(30))
+    hints:
+      - Comprueba primero si la edad está fuera del rango.
+      - 'En ese caso, lanza la excepción con `raise ValueError("...")`.'
+    mistakes:
+      - |
+        def validar_edad(edad):
+            if edad < 0 or edad > 120:
+                print("La edad debe estar entre 0 y 120")
+            return edad
+      - |
+        def validar_edad(edad):
+            if edad <= 0 or edad >= 120:
+                raise ValueError("La edad debe estar entre 0 y 120")
+            return edad
+      - |
+        def validar_edad(edad):
+            if edad < 0 or edad > 120:
+                return ValueError("La edad debe estar entre 0 y 120")
+            return edad
+    tests: |
+      for edad in [0, 30, 120]:
+          assert validar_edad(edad) == edad, f"validar_edad({edad}) debe devolver {edad}."
+      for edad in [-1, 121, 500]:
+          try:
+              resultado = validar_edad(edad)
+          except ValueError as error:
+              assert str(error).strip(), "El ValueError debe llevar un mensaje que explique el problema."
+          else:
+              assert False, f"validar_edad({edad}) debe lanzar un ValueError y devolvió {resultado!r}."
+
+  - id: retirar
+    type: python
+    title: Retiros con reglas
+    difficulty: 2
+    prompt: >-
+      Define `retirar(saldo, monto)`, que devuelva el saldo restante. Debe lanzar un
+      `ValueError` con el mensaje `El monto debe ser positivo` si el monto es cero o
+      negativo, y con el mensaje `Saldo insuficiente` si el monto es mayor que el saldo.
+    starterCode: |
+      def retirar(saldo, monto):
+          return saldo - monto
+
+      print(retirar(100, 30))
+    solution: |
+      def retirar(saldo, monto):
+          if monto <= 0:
+              raise ValueError("El monto debe ser positivo")
+          if monto > saldo:
+              raise ValueError("Saldo insuficiente")
+          return saldo - monto
+
+      print(retirar(100, 30))
+    hints:
+      - Valida los argumentos al principio, con un `if` para cada regla.
+      - Retirar exactamente todo el saldo está permitido.
+    mistakes:
+      - |
+        def retirar(saldo, monto):
+            if monto < 0:
+                raise ValueError("El monto debe ser positivo")
+            if monto > saldo:
+                raise ValueError("Saldo insuficiente")
+            return saldo - monto
+      - |
+        def retirar(saldo, monto):
+            if monto <= 0:
+                raise ValueError("El monto debe ser positivo")
+            if monto >= saldo:
+                raise ValueError("Saldo insuficiente")
+            return saldo - monto
+      - |
+        def retirar(saldo, monto):
+            if monto <= 0:
+                return "El monto debe ser positivo"
+            if monto > saldo:
+                return "Saldo insuficiente"
+            return saldo - monto
+    tests: |
+      assert retirar(100, 30) == 70, f"retirar(100, 30) debe devolver 70 y devolvió {retirar(100, 30)!r}."
+      assert retirar(50, 50) == 0, "Debe poderse retirar todo el saldo: retirar(50, 50) devuelve 0."
+      casos = [((100, 0), "El monto debe ser positivo"), ((100, -5), "El monto debe ser positivo"), ((100, 150), "Saldo insuficiente")]
+      for (saldo, monto), mensaje in casos:
+          try:
+              resultado = retirar(saldo, monto)
+          except ValueError as error:
+              assert str(error) == mensaje, f"retirar({saldo}, {monto}) debe lanzar el mensaje '{mensaje}' y lanzó '{error}'."
+          else:
+              assert False, f"retirar({saldo}, {monto}) debe lanzar un ValueError y devolvió {resultado!r}."
+
+  - id: promedio-con-aviso
+    type: python
+    title: Lanzar y capturar
+    difficulty: 2
+    prompt: >-
+      Completa `promedio(numeros)` para que lance un `ValueError` con el mensaje
+      `No hay datos` si la lista está vacía. Después, el programa lee una línea con números
+      separados por espacios y muestra su promedio; si la función lanza el error, debe
+      mostrar `Error: ` seguido del mensaje de la excepción.
+    stdin: ['4 6 8']
+    starterCode: |
+      def promedio(numeros):
+          return sum(numeros) / len(numeros)
+
+
+      numeros = [float(x) for x in input().split()]
+      print(promedio(numeros))
+    solution: |
+      def promedio(numeros):
+          if not numeros:
+              raise ValueError("No hay datos")
+          return sum(numeros) / len(numeros)
+
+
+      numeros = [float(x) for x in input().split()]
+      try:
+          print(promedio(numeros))
+      except ValueError as error:
+          print(f"Error: {error}")
+    hints:
+      - Una lista vacía se considera falsa, así que `if not numeros:` detecta el caso.
+      - En el programa principal, rodea la llamada con `try` y captura con `except ValueError as error:`.
+      - 'El mensaje se obtiene al mostrar la variable: `print(f"Error: {error}")`.'
+    mistakes:
+      - |
+        def promedio(numeros):
+            if not numeros:
+                print("Error: No hay datos")
+                return
+            return sum(numeros) / len(numeros)
+
+
+        numeros = [float(x) for x in input().split()]
+        resultado = promedio(numeros)
+        if resultado is not None:
+            print(resultado)
+      - |
+        def promedio(numeros):
+            return sum(numeros) / len(numeros)
+
+
+        numeros = [float(x) for x in input().split()]
+        try:
+            print(promedio(numeros))
+        except ZeroDivisionError:
+            print("Error: No hay datos")
+    tests: |
+      try:
+          promedio([])
+      except ValueError as error:
+          assert str(error) == "No hay datos", f"El mensaje del ValueError debe ser 'No hay datos' y fue '{error}'."
+      except ZeroDivisionError:
+          assert False, "promedio([]) debe lanzar un ValueError, no un ZeroDivisionError."
+      else:
+          assert False, "promedio([]) debe lanzar un ValueError."
+      assert promedio([4, 6]) == 5, "promedio([4, 6]) debe devolver 5."
+      for entrada, esperado in [("4 6 8", "6.0"), ("10", "10.0"), ("", "Error: No hay datos")]:
+          obtenido = ultima_linea(ejecutar_con([entrada]))
+          assert obtenido == esperado, f"Con la entrada '{entrada}' se esperaba '{esperado}' y se mostró '{obtenido}'."
+
+  - id: sin-stock
+    type: python
+    title: Una excepción propia
+    difficulty: 3
+    prompt: >-
+      Define la excepción `SinStockError` y la función `vender(inventario, producto,
+      cantidad)`. `inventario` es un diccionario de producto a unidades disponibles. Si el
+      producto no está en el inventario, la función lanza un `KeyError`. Si no hay unidades
+      suficientes, lanza `SinStockError` y deja el inventario como estaba. En otro caso,
+      descuenta las unidades del inventario y devuelve cuántas quedan.
+    starterCode: |
+      def vender(inventario, producto, cantidad):
+          inventario[producto] -= cantidad
+          return inventario[producto]
+
+
+      almacen = {"lápiz": 10, "goma": 2}
+      print(vender(almacen, "lápiz", 4))
+    solution: |
+      class SinStockError(Exception):
+          """No hay unidades suficientes para la venta."""
+
+
+      def vender(inventario, producto, cantidad):
+          if producto not in inventario:
+              raise KeyError(producto)
+          if cantidad > inventario[producto]:
+              raise SinStockError(f"Solo quedan {inventario[producto]} unidades de {producto}")
+          inventario[producto] -= cantidad
+          return inventario[producto]
+
+
+      almacen = {"lápiz": 10, "goma": 2}
+      print(vender(almacen, "lápiz", 4))
+    hints:
+      - 'La excepción se define con `class SinStockError(Exception):` y un docstring en su cuerpo.'
+      - Comprueba las existencias antes de modificar el inventario.
+      - Vender exactamente todas las unidades disponibles está permitido.
+    mistakes:
+      - |
+        class SinStockError(Exception):
+            """No hay unidades suficientes para la venta."""
+
+
+        def vender(inventario, producto, cantidad):
+            inventario[producto] -= cantidad
+            if inventario[producto] < 0:
+                raise SinStockError("No hay unidades suficientes")
+            return inventario[producto]
+      - |
+        class SinStockError(Exception):
+            """No hay unidades suficientes para la venta."""
+
+
+        def vender(inventario, producto, cantidad):
+            if cantidad >= inventario[producto]:
+                raise SinStockError("No hay unidades suficientes")
+            inventario[producto] -= cantidad
+            return inventario[producto]
+      - |
+        def vender(inventario, producto, cantidad):
+            if cantidad > inventario[producto]:
+                raise ValueError("No hay unidades suficientes")
+            inventario[producto] -= cantidad
+            return inventario[producto]
+    tests: |
+      assert "SinStockError" in dir(), "Define la excepción SinStockError."
+      assert issubclass(SinStockError, Exception), "SinStockError debe definirse como class SinStockError(Exception)."
+      almacen = {"lápiz": 10, "goma": 2}
+      assert vender(almacen, "lápiz", 4) == 6, "vender(almacen, 'lápiz', 4) debe devolver 6."
+      assert almacen == {"lápiz": 6, "goma": 2}, "La venta debe descontarse del inventario."
+      assert vender(almacen, "goma", 2) == 0, "Deben poderse vender todas las unidades disponibles."
+      try:
+          vender(almacen, "lápiz", 7)
+      except SinStockError:
+          pass
+      else:
+          assert False, "Vender 7 lápices cuando quedan 6 debe lanzar SinStockError."
+      assert almacen == {"lápiz": 6, "goma": 0}, "Si la venta falla, el inventario no debe cambiar."
+      try:
+          vender(almacen, "regla", 1)
+      except SinStockError:
+          assert False, "Un producto inexistente debe lanzar KeyError, no SinStockError."
+      except KeyError:
+          pass
+      else:
+          assert False, "Un producto inexistente debe lanzar KeyError."
+
+  - id: raise-o-return
+    type: quiz
+    title: ¿Qué hace raise?
+    difficulty: 1
+    prompt: 'Una función ejecuta `raise ValueError("dato inválido")` y quien la llamó no usa `try`. ¿Qué ocurre?'
+    options:
+      - 'La función devuelve el texto `"dato inválido"`'
+      - 'La función devuelve `None` y el programa continúa'
+      - 'El programa se detiene y muestra el `ValueError` con su mensaje'
+      - 'Se muestra el mensaje y la función continúa en la línea siguiente'
+    answer: 2
+    explanation: '`raise` interrumpe la función y la excepción se propaga a quien la llamó. Si nadie la captura con `try`/`except`, el programa termina mostrando el error.'
+
+  - id: quien-decide
+    type: quiz
+    title: ¿Quién decide qué hacer?
+    difficulty: 2
+    prompt: 'Una función `leer_precio(texto)` recibe un texto que no es un número. ¿Cuál es el mejor diseño?'
+    options:
+      - 'Mostrar el error con `print` dentro de la función y devolver `0`'
+      - 'Lanzar un `ValueError` y dejar que quien la llama decida cómo reaccionar'
+      - 'Devolver el texto `"error"`'
+      - 'Capturar el error con `except:` y no hacer nada'
+    answer: 1
+    explanation: 'La función no sabe en qué contexto se usa. Si lanza una excepción, quien la llama puede mostrar un mensaje, volver a preguntar o usar otro valor, y no puede ignorar el problema por accidente. Devolver `0` o `"error"` puede confundirse con un resultado válido.'

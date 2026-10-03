@@ -1,0 +1,201 @@
+exercises:
+  - id: mas-prestados
+    type: sql
+    title: Los libros más prestados
+    difficulty: 2
+    dataset: biblioteca
+    ordered: true
+    prompt: >-
+      Muestra los 3 libros que más veces se han prestado: su `titulo` y el número de
+      préstamos (alias `prestamos`), de más a menos. En caso de empate, ordena por título.
+    starterCode: |
+      SELECT l.titulo
+      FROM libros l
+      JOIN prestamos p ON p.libro_id = l.id;
+    solution: |
+      SELECT l.titulo, COUNT(*) AS prestamos
+      FROM libros l
+      JOIN prestamos p ON p.libro_id = l.id
+      GROUP BY l.id, l.titulo
+      ORDER BY prestamos DESC, l.titulo
+      LIMIT 3;
+    hints:
+      - Agrupa por libro y cuenta las filas de cada grupo.
+      - Ordena por el conteo en orden descendente y, después, por título.
+      - '`LIMIT 3` se queda con las tres primeras filas.'
+    mistakes:
+      - |
+        SELECT l.titulo, COUNT(*) AS prestamos
+        FROM libros l
+        JOIN prestamos p ON p.libro_id = l.id
+        GROUP BY l.id, l.titulo
+        ORDER BY prestamos DESC, l.titulo;
+      - |
+        SELECT l.titulo, COUNT(*) AS prestamos
+        FROM libros l
+        JOIN prestamos p ON p.libro_id = l.id
+        GROUP BY l.id, l.titulo
+        ORDER BY prestamos, l.titulo
+        LIMIT 3;
+      # Sin desempate por título el tercer puesto queda al azar; con DESC se ve el error.
+      - |
+        SELECT l.titulo, COUNT(*) AS prestamos
+        FROM libros l
+        JOIN prestamos p ON p.libro_id = l.id
+        GROUP BY l.id, l.titulo
+        ORDER BY prestamos DESC, l.titulo DESC
+        LIMIT 3;
+
+  - id: prestamos-por-genero
+    type: sql
+    title: Actividad por género
+    difficulty: 2
+    dataset: biblioteca
+    ordered: true
+    prompt: >-
+      Muestra cada `genero` y cuántos préstamos han tenido sus libros (alias `prestamos`),
+      incluidos los géneros que nunca se han prestado, que deben aparecer con `0`. Ordena
+      de más a menos préstamos y, en caso de empate, por género.
+    starterCode: |
+      SELECT l.genero, COUNT(*) AS prestamos
+      FROM libros l
+      JOIN prestamos p ON p.libro_id = l.id
+      GROUP BY l.genero
+      ORDER BY prestamos DESC, l.genero;
+    solution: |
+      SELECT l.genero, COUNT(p.id) AS prestamos
+      FROM libros l
+      LEFT JOIN prestamos p ON p.libro_id = l.id
+      GROUP BY l.genero
+      ORDER BY prestamos DESC, l.genero;
+    hints:
+      - Con `JOIN`, los géneros sin préstamos desaparecen. Usa `LEFT JOIN`.
+      - '`COUNT(*)` contaría 1 para un libro sin préstamos. Cuenta `p.id`.'
+    mistakes:
+      - |
+        SELECT l.genero, COUNT(*) AS prestamos
+        FROM libros l
+        LEFT JOIN prestamos p ON p.libro_id = l.id
+        GROUP BY l.genero
+        ORDER BY prestamos DESC, l.genero;
+      - |
+        SELECT l.genero, COUNT(l.id) AS prestamos
+        FROM libros l
+        LEFT JOIN prestamos p ON p.libro_id = l.id
+        GROUP BY l.genero
+        ORDER BY prestamos DESC, l.genero;
+
+  - id: socios-inactivos
+    type: sql
+    title: Socios que nunca han venido
+    difficulty: 2
+    dataset: biblioteca
+    prompt: >-
+      La biblioteca quiere enviar una invitación a los socios que nunca han pedido un libro.
+      Muestra su `nombre` y su `fecha_alta`.
+    starterCode: ''
+    solution: |
+      SELECT s.nombre, s.fecha_alta
+      FROM socios s
+      WHERE NOT EXISTS (SELECT 1 FROM prestamos p WHERE p.socio_id = s.id);
+    hints:
+      - Puedes usar `NOT EXISTS` con una subconsulta sobre `prestamos`.
+      - 'Otra opción es `LEFT JOIN prestamos` y quedarte con las filas donde `p.id IS NULL`.'
+    mistakes:
+      # Socios sin préstamos activos: incluye a quienes ya devolvieron todo.
+      - |
+        SELECT s.nombre, s.fecha_alta
+        FROM socios s
+        WHERE NOT EXISTS (
+          SELECT 1 FROM prestamos p WHERE p.socio_id = s.id AND p.fecha_devolucion IS NULL
+        );
+      # Con los datos visibles coincide por casualidad; los datos de verificación lo rechazan.
+      - |
+        SELECT s.nombre, s.fecha_alta
+        FROM socios s
+        WHERE s.fecha_alta >= '2025-06-01';
+
+  - id: duracion-por-genero
+    type: sql
+    title: ¿Cuánto tardan en volver?
+    difficulty: 3
+    dataset: biblioteca
+    ordered: true
+    prompt: >-
+      Calcula, para cada `genero`, la duración promedio en días de sus préstamos ya
+      devueltos (de `fecha_prestamo` a `fecha_devolucion`), redondeada a 1 decimal, con el
+      alias `dias_promedio`. Incluye solo los géneros con al menos 2 préstamos devueltos y
+      ordena del promedio más alto al más bajo.
+    starterCode: |
+      SELECT l.genero, p.fecha_devolucion - p.fecha_prestamo AS dias
+      FROM prestamos p
+      JOIN libros l ON l.id = p.libro_id
+      WHERE p.fecha_devolucion IS NOT NULL;
+    solution: |
+      SELECT l.genero, ROUND(AVG(p.fecha_devolucion - p.fecha_prestamo), 1) AS dias_promedio
+      FROM prestamos p
+      JOIN libros l ON l.id = p.libro_id
+      WHERE p.fecha_devolucion IS NOT NULL
+      GROUP BY l.genero
+      HAVING COUNT(*) >= 2
+      ORDER BY dias_promedio DESC;
+    hints:
+      - El código inicial ya muestra la duración de cada préstamo devuelto. Falta agrupar por género.
+      - 'El promedio redondeado es `ROUND(AVG(p.fecha_devolucion - p.fecha_prestamo), 1)`.'
+      - 'La condición sobre el tamaño del grupo va en `HAVING COUNT(*) >= 2`.'
+    mistakes:
+      - |
+        SELECT l.genero, ROUND(AVG(p.fecha_devolucion - p.fecha_prestamo), 1) AS dias_promedio
+        FROM prestamos p
+        JOIN libros l ON l.id = p.libro_id
+        WHERE p.fecha_devolucion IS NOT NULL
+        GROUP BY l.genero
+        ORDER BY dias_promedio DESC;
+      # Cuenta también los préstamos activos al decidir qué géneros tienen 2 o más.
+      - |
+        SELECT l.genero, ROUND(AVG(p.fecha_devolucion - p.fecha_prestamo), 1) AS dias_promedio
+        FROM prestamos p
+        JOIN libros l ON l.id = p.libro_id
+        GROUP BY l.genero
+        HAVING COUNT(*) >= 2
+        ORDER BY dias_promedio DESC;
+      - |
+        SELECT l.genero, ROUND(AVG(p.fecha_limite - p.fecha_prestamo), 1) AS dias_promedio
+        FROM prestamos p
+        JOIN libros l ON l.id = p.libro_id
+        WHERE p.fecha_devolucion IS NOT NULL
+        GROUP BY l.genero
+        HAVING COUNT(*) >= 2
+        ORDER BY dias_promedio DESC;
+
+  - id: where-o-having
+    type: quiz
+    title: WHERE o HAVING
+    difficulty: 2
+    prompt: 'Quieres un reporte con los socios que tienen más de 3 préstamos durante 2025. ¿Dónde va cada condición?'
+    options:
+      - 'Las dos en `WHERE`'
+      - 'Las dos en `HAVING`'
+      - 'El año en `WHERE` y el conteo en `HAVING`'
+      - 'El conteo en `WHERE` y el año en `HAVING`'
+    answer: 2
+    explanation: 'El año es una condición sobre cada préstamo y se aplica antes de agrupar, en `WHERE`. "Más de 3 préstamos" es una condición sobre el grupo y solo puede evaluarse después de agrupar, en `HAVING`.'
+
+  - id: proyecto-final
+    type: manual
+    title: 'Proyecto final: tu propia base de datos'
+    difficulty: 3
+    prompt: >-
+      Repite el ciclo completo con un tema que te interese: un videoclub, un torneo
+      deportivo, las tareas de un equipo, tu colección de música. Puedes trabajar en el
+      editor del ejercicio "Socios y préstamos" de la primera lección (parte de una base de
+      datos vacía) o en PostgreSQL instalado en tu computadora. Cuando termines, revisa la
+      lista y marca el ejercicio como completado.
+    checklist:
+      - Escribí los requisitos en unas pocas frases, como lo haría la persona que va a usar la base de datos.
+      - Diseñé al menos tres tablas, con una relación de uno a muchos y una de muchos a muchos.
+      - Cada tabla tiene clave primaria, y las relaciones usan claves foráneas.
+      - Usé `NOT NULL`, `UNIQUE`, `CHECK` y `DEFAULT` donde las reglas lo piden, y comprobé que rechazan datos incorrectos.
+      - Cargué datos de ejemplo con `INSERT` y probé un `UPDATE` y un `DELETE` con su `WHERE`.
+      - Escribí al menos una consulta con `JOIN`, una con `LEFT JOIN` para encontrar lo que falta y un reporte con `GROUP BY` y `HAVING`.
+      - Ningún dato se guarda repetido en dos lugares.

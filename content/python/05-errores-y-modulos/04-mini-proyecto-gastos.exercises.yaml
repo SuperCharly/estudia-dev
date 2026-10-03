@@ -1,0 +1,399 @@
+exercises:
+  - id: leer-gasto
+    type: python
+    title: 'Paso 1: interpretar una línea'
+    difficulty: 2
+    prompt: >-
+      Define `leer_gasto(linea)`, que reciba un texto como `comida 45.50` y devuelva la
+      tupla `("comida", 45.5)`, con el monto convertido a `float`. Debe lanzar un
+      `ValueError` si la línea no tiene exactamente dos partes, si el monto no es un número
+      o si el monto es cero o negativo.
+    starterCode: |
+      def leer_gasto(linea):
+          categoria, monto = linea.split()
+          return categoria, monto
+
+
+      print(leer_gasto("comida 45.50"))
+    solution: |
+      def leer_gasto(linea):
+          partes = linea.split()
+          if len(partes) != 2:
+              raise ValueError(f"Formato incorrecto: {linea!r}")
+          categoria, texto = partes
+          monto = float(texto)
+          if monto <= 0:
+              raise ValueError("El monto debe ser positivo")
+          return categoria, monto
+
+
+      print(leer_gasto("comida 45.50"))
+    hints:
+      - Separa la línea con `split()` y comprueba que haya exactamente dos partes.
+      - '`float(texto)` ya lanza un `ValueError` si el texto no es un número, así que no necesitas hacerlo tú.'
+      - Después de convertir, comprueba que el monto sea mayor que cero.
+    mistakes:
+      - |
+        def leer_gasto(linea):
+            partes = linea.split()
+            if len(partes) != 2:
+                raise ValueError("Formato incorrecto")
+            categoria, texto = partes
+            return categoria, float(texto)
+      - |
+        def leer_gasto(linea):
+            partes = linea.split()
+            if len(partes) < 2:
+                raise ValueError("Formato incorrecto")
+            monto = float(partes[1])
+            if monto <= 0:
+                raise ValueError("El monto debe ser positivo")
+            return partes[0], monto
+      - |
+        def leer_gasto(linea):
+            try:
+                categoria, texto = linea.split()
+                monto = float(texto)
+            except ValueError:
+                return None
+            if monto <= 0:
+                return None
+            return categoria, monto
+    tests: |
+      assert leer_gasto("comida 45.50") == ("comida", 45.5), f"leer_gasto('comida 45.50') debe devolver ('comida', 45.5) y devolvió {leer_gasto('comida 45.50')!r}."
+      assert leer_gasto("  transporte   12 ") == ("transporte", 12.0), "Los espacios de más no deben afectar al resultado."
+      assert isinstance(leer_gasto("ocio 3")[1], float), "El monto debe devolverse como float."
+      for linea in ["cine", "", "a b c", "comida 10 20", "comida mucho", "ocio -5", "ocio 0"]:
+          try:
+              resultado = leer_gasto(linea)
+          except ValueError:
+              pass
+          else:
+              assert False, f"leer_gasto({linea!r}) debe lanzar un ValueError y devolvió {resultado!r}."
+
+  - id: procesar-lineas
+    type: python
+    title: 'Paso 2: procesar sin detenerse'
+    difficulty: 3
+    prompt: >-
+      Define `procesar(lineas)`, que reciba una lista de textos y devuelva una tupla
+      `(gastos, errores)`. `gastos` es la lista de tuplas que devuelve `leer_gasto` para las
+      líneas correctas, y `errores` es la lista con los números de las líneas incorrectas
+      (la primera línea es la 1). La función `leer_gasto` ya está escrita.
+    starterCode: |
+      def leer_gasto(linea):
+          partes = linea.split()
+          if len(partes) != 2:
+              raise ValueError(f"Formato incorrecto: {linea!r}")
+          categoria, texto = partes
+          monto = float(texto)
+          if monto <= 0:
+              raise ValueError("El monto debe ser positivo")
+          return categoria, monto
+
+
+      def procesar(lineas):
+          gastos = []
+          errores = []
+          for linea in lineas:
+              gastos.append(leer_gasto(linea))
+          return gastos, errores
+
+
+      print(procesar(["comida 45.50", "cine", "comida 30"]))
+    solution: |
+      def leer_gasto(linea):
+          partes = linea.split()
+          if len(partes) != 2:
+              raise ValueError(f"Formato incorrecto: {linea!r}")
+          categoria, texto = partes
+          monto = float(texto)
+          if monto <= 0:
+              raise ValueError("El monto debe ser positivo")
+          return categoria, monto
+
+
+      def procesar(lineas):
+          gastos = []
+          errores = []
+          for numero, linea in enumerate(lineas, start=1):
+              try:
+                  gastos.append(leer_gasto(linea))
+              except ValueError:
+                  errores.append(numero)
+          return gastos, errores
+
+
+      print(procesar(["comida 45.50", "cine", "comida 30"]))
+    hints:
+      - Ejecuta el código inicial. La segunda línea detiene todo el programa.
+      - Pon la llamada a `leer_gasto` dentro de un `try`, dentro del bucle.
+      - '`enumerate(lineas, start=1)` te da el número de línea junto con cada texto.'
+    mistakes:
+      - |
+        def leer_gasto(linea):
+            partes = linea.split()
+            if len(partes) != 2:
+                raise ValueError(f"Formato incorrecto: {linea!r}")
+            categoria, texto = partes
+            monto = float(texto)
+            if monto <= 0:
+                raise ValueError("El monto debe ser positivo")
+            return categoria, monto
+
+
+        def procesar(lineas):
+            gastos = []
+            errores = []
+            for numero, linea in enumerate(lineas):
+                try:
+                    gastos.append(leer_gasto(linea))
+                except ValueError:
+                    errores.append(numero)
+            return gastos, errores
+      - |
+        def leer_gasto(linea):
+            partes = linea.split()
+            if len(partes) != 2:
+                raise ValueError(f"Formato incorrecto: {linea!r}")
+            categoria, texto = partes
+            monto = float(texto)
+            if monto <= 0:
+                raise ValueError("El monto debe ser positivo")
+            return categoria, monto
+
+
+        def procesar(lineas):
+            gastos = []
+            errores = []
+            try:
+                for numero, linea in enumerate(lineas, start=1):
+                    gastos.append(leer_gasto(linea))
+            except ValueError:
+                errores.append(numero)
+            return gastos, errores
+    tests: |
+      r = procesar(["comida 45.50", "cine", "comida 30"])
+      assert r == ([("comida", 45.5), ("comida", 30.0)], [2]), f"Con 'comida 45.50', 'cine' y 'comida 30' se esperaba ([('comida', 45.5), ('comida', 30.0)], [2]) y se obtuvo {r!r}."
+      r = procesar(["x", "ocio 5", "ocio -5", "luz 100"])
+      assert r == ([("ocio", 5.0), ("luz", 100.0)], [1, 3]), f"Las líneas incorrectas 1 y 3 deben anotarse y las demás procesarse; se obtuvo {r!r}."
+      assert procesar([]) == ([], []), "Con una lista vacía debe devolver ([], [])."
+      assert procesar(["agua 10"]) == ([("agua", 10.0)], []), "Sin errores, la lista de errores queda vacía."
+
+  - id: totales-por-categoria
+    type: python
+    title: 'Paso 3: totales por categoría'
+    difficulty: 2
+    prompt: >-
+      Define `totales_por_categoria(gastos)`, que reciba una lista de tuplas
+      `(categoria, monto)` y devuelva un diccionario con la suma de los montos de cada
+      categoría.
+    starterCode: |
+      def totales_por_categoria(gastos):
+          totales = {}
+          return totales
+
+
+      print(totales_por_categoria([("comida", 45.5), ("transporte", 12.0), ("comida", 30.0)]))
+    solution: |
+      def totales_por_categoria(gastos):
+          totales = {}
+          for categoria, monto in gastos:
+              totales[categoria] = totales.get(categoria, 0) + monto
+          return totales
+
+
+      print(totales_por_categoria([("comida", 45.5), ("transporte", 12.0), ("comida", 30.0)]))
+    hints:
+      - Recorre la lista desempaquetando cada tupla con `for categoria, monto in gastos:`.
+      - '`totales.get(categoria, 0)` devuelve lo acumulado hasta ahora, o 0 si la categoría es nueva.'
+    mistakes:
+      - |
+        def totales_por_categoria(gastos):
+            totales = {}
+            for categoria, monto in gastos:
+                totales[categoria] = monto
+            return totales
+      - |
+        def totales_por_categoria(gastos):
+            totales = {}
+            for categoria, monto in gastos:
+                totales[categoria] = totales.get(categoria, 0) + 1
+            return totales
+    tests: |
+      r = totales_por_categoria([("comida", 45.5), ("transporte", 12.0), ("comida", 30.0)])
+      assert r == {"comida": 75.5, "transporte": 12.0}, f"Se esperaba {{'comida': 75.5, 'transporte': 12.0}} y se obtuvo {r!r}."
+      assert totales_por_categoria([]) == {}, "Sin gastos debe devolver un diccionario vacío."
+      r = totales_por_categoria([("luz", 100.0), ("luz", 50.0), ("luz", 25.0)])
+      assert r == {"luz": 175.0}, f"Tres gastos de la misma categoría deben sumarse; se obtuvo {r!r}."
+
+  - id: programa-completo
+    type: python
+    title: 'Paso 4: el programa completo'
+    difficulty: 3
+    prompt: >-
+      Escribe el programa principal. Lee líneas hasta encontrar `fin`, procésalas con las
+      funciones ya escritas y muestra el informe: una línea `categoria: total` por cada
+      categoría, en orden alfabético; después `Total: ` con la suma de todo; y por último
+      `Líneas con error: ` con la cantidad de líneas incorrectas. Todos los montos se
+      muestran con dos decimales.
+    stdin: ['comida 45.50', 'transporte 12', 'comida 30', 'cine', 'ocio -5', 'fin']
+    starterCode: |
+      def leer_gasto(linea):
+          partes = linea.split()
+          if len(partes) != 2:
+              raise ValueError(f"Formato incorrecto: {linea!r}")
+          categoria, texto = partes
+          monto = float(texto)
+          if monto <= 0:
+              raise ValueError("El monto debe ser positivo")
+          return categoria, monto
+
+
+      def procesar(lineas):
+          gastos = []
+          errores = []
+          for numero, linea in enumerate(lineas, start=1):
+              try:
+                  gastos.append(leer_gasto(linea))
+              except ValueError:
+                  errores.append(numero)
+          return gastos, errores
+
+
+      def totales_por_categoria(gastos):
+          totales = {}
+          for categoria, monto in gastos:
+              totales[categoria] = totales.get(categoria, 0) + monto
+          return totales
+
+
+      # Programa principal
+      lineas = []
+    solution: |
+      def leer_gasto(linea):
+          partes = linea.split()
+          if len(partes) != 2:
+              raise ValueError(f"Formato incorrecto: {linea!r}")
+          categoria, texto = partes
+          monto = float(texto)
+          if monto <= 0:
+              raise ValueError("El monto debe ser positivo")
+          return categoria, monto
+
+
+      def procesar(lineas):
+          gastos = []
+          errores = []
+          for numero, linea in enumerate(lineas, start=1):
+              try:
+                  gastos.append(leer_gasto(linea))
+              except ValueError:
+                  errores.append(numero)
+          return gastos, errores
+
+
+      def totales_por_categoria(gastos):
+          totales = {}
+          for categoria, monto in gastos:
+              totales[categoria] = totales.get(categoria, 0) + monto
+          return totales
+
+
+      # Programa principal
+      lineas = []
+      linea = input()
+      while linea != "fin":
+          lineas.append(linea)
+          linea = input()
+
+      gastos, errores = procesar(lineas)
+      totales = totales_por_categoria(gastos)
+      for categoria in sorted(totales):
+          print(f"{categoria}: {totales[categoria]:.2f}")
+      print(f"Total: {sum(totales.values()):.2f}")
+      print(f"Líneas con error: {len(errores)}")
+    hints:
+      - Lee con un `while` hasta encontrar `fin`, guardando cada línea en la lista.
+      - Llama a `procesar` y pasa los gastos obtenidos a `totales_por_categoria`.
+      - '`sorted(totales)` da las categorías en orden alfabético y `{valor:.2f}` muestra dos decimales.'
+      - El total general es `sum(totales.values())`.
+    mistakes:
+      - |
+        def leer_gasto(linea):
+            partes = linea.split()
+            if len(partes) != 2:
+                raise ValueError(f"Formato incorrecto: {linea!r}")
+            categoria, texto = partes
+            monto = float(texto)
+            if monto <= 0:
+                raise ValueError("El monto debe ser positivo")
+            return categoria, monto
+
+
+        def procesar(lineas):
+            gastos = []
+            errores = []
+            for numero, linea in enumerate(lineas, start=1):
+                try:
+                    gastos.append(leer_gasto(linea))
+                except ValueError:
+                    errores.append(numero)
+            return gastos, errores
+
+
+        def totales_por_categoria(gastos):
+            totales = {}
+            for categoria, monto in gastos:
+                totales[categoria] = totales.get(categoria, 0) + monto
+            return totales
+
+
+        lineas = []
+        linea = input()
+        while linea != "fin":
+            lineas.append(linea)
+            linea = input()
+
+        gastos, errores = procesar(lineas)
+        totales = totales_por_categoria(gastos)
+        for categoria in totales:
+            print(f"{categoria}: {totales[categoria]}")
+        print(f"Total: {sum(totales.values())}")
+        print(f"Líneas con error: {len(errores)}")
+      - |
+        print("comida: 75.50")
+        print("transporte: 12.00")
+        print("Total: 87.50")
+        print("Líneas con error: 2")
+    tests: |
+      def informe(entradas):
+          lineas = ejecutar_con(entradas).splitlines()
+          return lineas[len(entradas):]
+
+      casos = [
+          (["comida 45.50", "transporte 12", "comida 30", "cine", "ocio -5", "fin"],
+           ["comida: 75.50", "transporte: 12.00", "Total: 87.50", "Líneas con error: 2"]),
+          (["luz 100", "agua 20.5", "fin"],
+           ["agua: 20.50", "luz: 100.00", "Total: 120.50", "Líneas con error: 0"]),
+          (["fin"], ["Total: 0.00", "Líneas con error: 0"]),
+          (["nada", "fin"], ["Total: 0.00", "Líneas con error: 1"]),
+      ]
+      for entradas, esperado in casos:
+          obtenido = informe(entradas)
+          assert obtenido == esperado, f"Con las entradas {entradas} se esperaba el informe {esperado} y se obtuvo {obtenido}."
+
+  - id: ampliar-proyecto
+    type: manual
+    title: Amplía tu registro de gastos
+    difficulty: 3
+    prompt: >-
+      Ahora el proyecto es tuyo. Copia el programa completo a un archivo en tu computadora
+      (o sigue en el editor del ejercicio anterior) y agrégale al menos dos mejoras. Cuando
+      termines, revisa la lista y marca el ejercicio como completado.
+    checklist:
+      - Agregué una función nueva con su docstring y sus anotaciones de tipo (por ejemplo, el gasto más alto o el promedio por categoría).
+      - Usé al menos un módulo de la biblioteca estándar (por ejemplo, `statistics` para la media o `datetime` para la fecha del informe).
+      - Mi programa no se detiene con ningún dato incorrecto y le explica al usuario qué línea falló.
+      - Las funciones que calculan no usan `input` ni `print`.
+      - Probé el programa con una entrada vacía, con una sola línea y con varias líneas incorrectas.

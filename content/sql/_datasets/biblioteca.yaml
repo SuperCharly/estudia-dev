@@ -1,0 +1,162 @@
+title: Biblioteca
+description: >-
+  Una biblioteca de barrio con `autores`, `libros`, `socios` y `prestamos`. Un préstamo
+  sin `fecha_devolucion` sigue activo. En los ejercicios, "hoy" es el `2025-10-06`.
+sql: |
+  CREATE TABLE autores (
+    id     INTEGER PRIMARY KEY,
+    nombre TEXT NOT NULL,
+    pais   TEXT
+  );
+
+  INSERT INTO autores (id, nombre, pais) VALUES
+    (1, 'Gabriel García Márquez', 'Colombia'),
+    (2, 'Isabel Allende',         'Chile'),
+    (3, 'Jorge Luis Borges',      'Argentina'),
+    (4, 'Julio Cortázar',         'Argentina'),
+    (5, 'Rosario Castellanos',    'México'),
+    (6, 'Juan Rulfo',             'México'),
+    (7, 'Octavio Paz',            'México');
+
+  CREATE TABLE libros (
+    id         INTEGER PRIMARY KEY,
+    titulo     TEXT NOT NULL,
+    autor_id   INTEGER NOT NULL REFERENCES autores (id),
+    genero     TEXT NOT NULL,
+    anio       INTEGER,
+    ejemplares INTEGER NOT NULL DEFAULT 1 CHECK (ejemplares >= 1)
+  );
+
+  INSERT INTO libros (id, titulo, autor_id, genero, anio, ejemplares) VALUES
+    (1,  'Cien años de soledad',               1, 'Novela', 1967, 3),
+    (2,  'El amor en los tiempos del cólera',  1, 'Novela', 1985, 2),
+    (3,  'La casa de los espíritus',           2, 'Novela', 1982, 2),
+    (4,  'Ficciones',                          3, 'Cuento', 1944, 1),
+    (5,  'El Aleph',                           3, 'Cuento', 1949, 2),
+    (6,  'Rayuela',                            4, 'Novela', 1963, 1),
+    (7,  'Bestiario',                          4, 'Cuento', 1951, 1),
+    (8,  'Balún Canán',                        5, 'Novela', 1957, 1),
+    (9,  'Poesía no eres tú',                  5, 'Poesía', 1972, 1),
+    (10, 'Pedro Páramo',                       6, 'Novela', 1955, 2),
+    (11, 'El llano en llamas',                 6, 'Cuento', 1953, 1),
+    (12, 'El laberinto de la soledad',         7, 'Ensayo', 1950, 1);
+
+  CREATE TABLE socios (
+    id         INTEGER PRIMARY KEY,
+    nombre     TEXT NOT NULL,
+    email      TEXT UNIQUE,
+    fecha_alta DATE NOT NULL DEFAULT CURRENT_DATE
+  );
+
+  INSERT INTO socios (id, nombre, email, fecha_alta) VALUES
+    (1, 'Ana Torres',  'ana@example.com',    '2024-01-15'),
+    (2, 'Luis Pérez',  'luis@example.com',   '2024-03-02'),
+    (3, 'Marta Gómez', 'marta@example.com',  '2024-05-20'),
+    (4, 'Jorge Ruiz',  NULL,                 '2024-09-11'),
+    (5, 'Sofía Díaz',  'sofia@example.com',  '2025-01-08'),
+    (6, 'Diego Luna',  'diego@example.com',  '2025-06-14'),
+    (7, 'Carmen Vega', 'carmen@example.com', '2025-09-01');
+
+  CREATE TABLE prestamos (
+    id               INTEGER PRIMARY KEY,
+    libro_id         INTEGER NOT NULL REFERENCES libros (id),
+    socio_id         INTEGER NOT NULL REFERENCES socios (id),
+    fecha_prestamo   DATE NOT NULL,
+    fecha_limite     DATE NOT NULL,
+    fecha_devolucion DATE,
+    CHECK (fecha_limite >= fecha_prestamo),
+    CHECK (fecha_devolucion IS NULL OR fecha_devolucion >= fecha_prestamo)
+  );
+
+  INSERT INTO prestamos (id, libro_id, socio_id, fecha_prestamo, fecha_limite, fecha_devolucion) VALUES
+    (1,  1,  1, '2025-06-02', '2025-06-16', '2025-06-12'),
+    (2,  4,  2, '2025-06-10', '2025-06-24', '2025-06-30'),
+    (3,  1,  3, '2025-07-01', '2025-07-15', '2025-07-15'),
+    (4,  6,  1, '2025-07-20', '2025-08-03', '2025-08-01'),
+    (5,  10, 4, '2025-08-05', '2025-08-19', '2025-08-25'),
+    (6,  5,  3, '2025-08-18', '2025-09-01', '2025-08-28'),
+    (7,  1,  5, '2025-09-01', '2025-09-15', '2025-09-10'),
+    (8,  3,  2, '2025-09-10', '2025-09-24', NULL),
+    (9,  10, 3, '2025-09-20', '2025-10-04', NULL),
+    (10, 1,  1, '2025-09-28', '2025-10-12', NULL),
+    (11, 7,  3, '2025-09-30', '2025-10-14', NULL),
+    (12, 2,  5, '2025-10-01', '2025-10-15', NULL),
+    (13, 10, 2, '2025-10-02', '2025-10-16', NULL),
+    (14, 12, 4, '2025-08-20', '2025-09-03', '2025-09-01');
+
+# Datos ocultos para verificar las consultas (mismas tablas, otras filas): otros géneros,
+# otro libro agotado, otros préstamos atrasados y promedios y conteos distintos.
+verificationSql: |
+  CREATE TABLE autores (
+    id     INTEGER PRIMARY KEY,
+    nombre TEXT NOT NULL,
+    pais   TEXT
+  );
+
+  INSERT INTO autores (id, nombre, pais) VALUES
+    (1, 'Mario Benedetti',    'Uruguay'),
+    (2, 'Gabriela Mistral',   'Chile'),
+    (3, 'Alfonso Reyes',      'México'),
+    (4, 'Elena Poniatowska',  'México'),
+    (5, 'Horacio Quiroga',    NULL);
+
+  CREATE TABLE libros (
+    id         INTEGER PRIMARY KEY,
+    titulo     TEXT NOT NULL,
+    autor_id   INTEGER NOT NULL REFERENCES autores (id),
+    genero     TEXT NOT NULL,
+    anio       INTEGER,
+    ejemplares INTEGER NOT NULL DEFAULT 1 CHECK (ejemplares >= 1)
+  );
+
+  INSERT INTO libros (id, titulo, autor_id, genero, anio, ejemplares) VALUES
+    (1, 'La tregua',                             1, 'Novela',  1960, 2),
+    (2, 'Montevideanos',                         1, 'Cuento',  1959, 1),
+    (3, 'Desolación',                            2, 'Poesía',  1922, 2),
+    (4, 'Tala',                                  2, 'Poesía',  1938, 1),
+    (5, 'Visión de Anáhuac',                     3, 'Ensayo',  1917, 1),
+    (6, 'La noche de Tlatelolco',                4, 'Crónica', 1971, 2),
+    (7, 'Hasta no verte Jesús mío',              4, 'Novela',  1969, 1),
+    (8, 'Cuentos de la selva',                   5, 'Cuento',  1918, 3),
+    (9, 'Cuentos de amor de locura y de muerte', 5, 'Cuento',  NULL, 1);
+
+  CREATE TABLE socios (
+    id         INTEGER PRIMARY KEY,
+    nombre     TEXT NOT NULL,
+    email      TEXT UNIQUE,
+    fecha_alta DATE NOT NULL DEFAULT CURRENT_DATE
+  );
+
+  INSERT INTO socios (id, nombre, email, fecha_alta) VALUES
+    (1, 'Valeria Ríos',  'valeria@example.com', '2024-02-11'),
+    (2, 'Tomás Herrera', NULL,                  '2024-04-03'),
+    (3, 'Lucía Navarro', 'lucia@example.com',   '2024-06-19'),
+    (4, 'Andrés Molina', 'andres@example.com',  '2024-08-30'),
+    (5, 'Paula Castro',  'paula@example.com',   '2025-01-22'),
+    (6, 'Mateo Silva',   NULL,                  '2025-03-14');
+
+  CREATE TABLE prestamos (
+    id               INTEGER PRIMARY KEY,
+    libro_id         INTEGER NOT NULL REFERENCES libros (id),
+    socio_id         INTEGER NOT NULL REFERENCES socios (id),
+    fecha_prestamo   DATE NOT NULL,
+    fecha_limite     DATE NOT NULL,
+    fecha_devolucion DATE,
+    CHECK (fecha_limite >= fecha_prestamo),
+    CHECK (fecha_devolucion IS NULL OR fecha_devolucion >= fecha_prestamo)
+  );
+
+  INSERT INTO prestamos (id, libro_id, socio_id, fecha_prestamo, fecha_limite, fecha_devolucion) VALUES
+    (1,  8, 1, '2025-05-05', '2025-05-19', '2025-05-15'),
+    (2,  8, 2, '2025-05-20', '2025-06-03', '2025-06-10'),
+    (3,  3, 3, '2025-06-01', '2025-06-15', '2025-06-08'),
+    (4,  1, 1, '2025-06-15', '2025-06-29', '2025-06-29'),
+    (5,  8, 4, '2025-07-10', '2025-07-24', '2025-07-20'),
+    (6,  6, 3, '2025-08-01', '2025-08-15', '2025-08-12'),
+    (7,  4, 2, '2025-08-22', '2025-09-05', '2025-09-04'),
+    (8,  1, 3, '2025-09-05', '2025-09-19', NULL),
+    (9,  8, 2, '2025-09-18', '2025-10-02', NULL),
+    (10, 3, 3, '2025-09-25', '2025-10-09', NULL),
+    (11, 7, 1, '2025-09-29', '2025-10-13', NULL),
+    (12, 1, 4, '2025-10-03', '2025-10-17', NULL),
+    (13, 6, 1, '2025-10-04', '2025-10-18', NULL);

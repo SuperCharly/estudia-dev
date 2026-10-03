@@ -1,0 +1,285 @@
+exercises:
+  - id: hipotenusa
+    type: python
+    title: La hipotenusa
+    difficulty: 1
+    prompt: >-
+      Importa el módulo `math` y define `hipotenusa(a, b)`, que devuelva la raíz cuadrada
+      de `a` al cuadrado más `b` al cuadrado, usando `math.sqrt`. Por ejemplo,
+      `hipotenusa(3, 4)` devuelve `5.0`.
+    starterCode: |
+      def hipotenusa(a, b):
+          return sqrt(a ** 2 + b ** 2)
+
+      print(hipotenusa(3, 4))
+    solution: |
+      import math
+
+
+      def hipotenusa(a, b):
+          return math.sqrt(a ** 2 + b ** 2)
+
+      print(hipotenusa(3, 4))
+    hints:
+      - Ejecuta el código inicial. `sqrt` no existe hasta que importas el módulo que la contiene.
+      - Escribe `import math` al principio y llama a la función como `math.sqrt(...)`.
+    mistakes:
+      - |
+        import math
+
+
+        def hipotenusa(a, b):
+            return math.sqrt(a + b)
+
+        print(hipotenusa(3, 4))
+      - |
+        import math
+
+
+        def hipotenusa(a, b):
+            return math.sqrt(a ** 2) + math.sqrt(b ** 2)
+
+        print(hipotenusa(3, 4))
+    tests: |
+      assert hipotenusa(3, 4) == 5.0, f"hipotenusa(3, 4) debe devolver 5.0 y devolvió {hipotenusa(3, 4)!r}."
+      assert hipotenusa(5, 12) == 13.0, f"hipotenusa(5, 12) debe devolver 13.0 y devolvió {hipotenusa(5, 12)!r}."
+      assert abs(hipotenusa(1, 1) - 1.4142135623730951) < 1e-9, "hipotenusa(1, 1) debe ser la raíz cuadrada de 2."
+      assert "math" in codigo, "Usa el módulo math."
+
+  - id: cajas-necesarias
+    type: python
+    title: ¿Cuántas cajas hacen falta?
+    difficulty: 1
+    prompt: >-
+      Define `cajas(piezas, por_caja)`, que devuelva cuántas cajas se necesitan para guardar
+      todas las piezas si en cada caja caben `por_caja`. Una caja a medio llenar también
+      cuenta. Usa `math.ceil`.
+    starterCode: |
+      def cajas(piezas, por_caja):
+          return piezas // por_caja
+
+      print(cajas(50, 12))
+    solution: |
+      import math
+
+
+      def cajas(piezas, por_caja):
+          return math.ceil(piezas / por_caja)
+
+      print(cajas(50, 12))
+    hints:
+      - Con 50 piezas y cajas de 12, la división da 4.17, pero hacen falta 5 cajas.
+      - '`math.ceil(x)` redondea hacia arriba al entero más cercano.'
+    mistakes:
+      - |
+        def cajas(piezas, por_caja):
+            return round(piezas / por_caja)
+      - |
+        def cajas(piezas, por_caja):
+            return piezas // por_caja + 1
+    tests: |
+      for (piezas, por_caja), esperado in [((50, 12), 5), ((48, 12), 4), ((1, 12), 1), ((0, 12), 0), ((13, 12), 2), ((30, 12), 3)]:
+          obtenido = cajas(piezas, por_caja)
+          assert obtenido == esperado, f"cajas({piezas}, {por_caja}) debe devolver {esperado} y devolvió {obtenido!r}."
+
+  - id: dias-entre-fechas
+    type: python
+    title: Días entre dos fechas
+    difficulty: 2
+    prompt: >-
+      Define `dias_entre(inicio, fin)`, que reciba dos fechas como texto con el formato
+      `AAAA-MM-DD` y devuelva cuántos días hay de la primera a la segunda (negativo si la
+      segunda es anterior). Usa `date` del módulo `datetime`.
+    starterCode: |
+      from datetime import date
+
+
+      def dias_entre(inicio, fin):
+          pass
+
+
+      print(dias_entre("2025-10-01", "2025-12-25"))
+    solution: |
+      from datetime import date
+
+
+      def dias_entre(inicio, fin):
+          diferencia = date.fromisoformat(fin) - date.fromisoformat(inicio)
+          return diferencia.days
+
+
+      print(dias_entre("2025-10-01", "2025-12-25"))
+    hints:
+      - '`date.fromisoformat("2025-10-01")` convierte el texto en una fecha.'
+      - Restar dos fechas da una duración. Su atributo `days` es el número de días.
+    mistakes:
+      - |
+        def dias_entre(inicio, fin):
+            a1, m1, d1 = [int(x) for x in inicio.split("-")]
+            a2, m2, d2 = [int(x) for x in fin.split("-")]
+            return (a2 - a1) * 365 + (m2 - m1) * 30 + (d2 - d1)
+      - |
+        from datetime import date
+
+
+        def dias_entre(inicio, fin):
+            diferencia = date.fromisoformat(inicio) - date.fromisoformat(fin)
+            return diferencia.days
+      - |
+        from datetime import date
+
+
+        def dias_entre(inicio, fin):
+            diferencia = date.fromisoformat(fin) - date.fromisoformat(inicio)
+            return abs(diferencia.days)
+    tests: |
+      casos = [(("2025-10-01", "2025-12-25"), 85), (("2024-02-28", "2024-03-01"), 2), (("2025-02-28", "2025-03-01"), 1), (("2025-05-10", "2025-05-10"), 0), (("2025-01-10", "2025-01-01"), -9), (("2024-12-31", "2025-01-01"), 1)]
+      for (inicio, fin), esperado in casos:
+          obtenido = dias_entre(inicio, fin)
+          assert obtenido == esperado, f"dias_entre('{inicio}', '{fin}') debe devolver {esperado} y devolvió {obtenido!r}."
+
+  - id: media-y-mediana
+    type: python
+    title: Media y mediana
+    difficulty: 2
+    prompt: >-
+      Define `resumen(datos)`, que devuelva una tupla con la media y la mediana de una lista
+      de números, usando el módulo `statistics`. Si la lista está vacía, debe devolver
+      `None` (captura la excepción `statistics.StatisticsError`).
+    starterCode: |
+      import statistics
+
+
+      def resumen(datos):
+          pass
+
+
+      print(resumen([3, 1, 10, 2]))
+      print(resumen([]))
+    solution: |
+      import statistics
+
+
+      def resumen(datos):
+          try:
+              return statistics.mean(datos), statistics.median(datos)
+          except statistics.StatisticsError:
+              return None
+
+
+      print(resumen([3, 1, 10, 2]))
+      print(resumen([]))
+    hints:
+      - '`statistics.mean(datos)` da la media y `statistics.median(datos)`, la mediana.'
+      - Para devolver una tupla, separa los dos valores con una coma.
+      - 'Rodea el cálculo con `try` y captura `statistics.StatisticsError`.'
+    mistakes:
+      - |
+        import statistics
+
+
+        def resumen(datos):
+            if not datos:
+                return None
+            return statistics.mean(datos), datos[len(datos) // 2]
+      - |
+        import statistics
+
+
+        def resumen(datos):
+            return statistics.mean(datos), statistics.median(datos)
+    tests: |
+      assert resumen([3, 1, 10, 2]) == (4, 2.5), f"resumen([3, 1, 10, 2]) debe devolver (4, 2.5) y devolvió {resumen([3, 1, 10, 2])!r}."
+      assert resumen([5]) == (5, 5), "resumen([5]) debe devolver (5, 5)."
+      assert resumen([9, 1, 5]) == (5, 5), f"resumen([9, 1, 5]) debe devolver (5, 5) y devolvió {resumen([9, 1, 5])!r}."
+      try:
+          vacio = resumen([])
+      except Exception as error:
+          assert False, f"resumen([]) no debe lanzar una excepción ({type(error).__name__}): debe devolver None."
+      assert vacio is None, "resumen([]) debe devolver None."
+      assert "statistics" in codigo, "Usa el módulo statistics."
+
+  - id: palabras-frecuentes
+    type: python
+    title: Las palabras más frecuentes
+    difficulty: 3
+    prompt: >-
+      Define `mas_frecuentes(texto, n)`, que devuelva las `n` palabras más frecuentes del
+      texto como una lista de tuplas `(palabra, veces)`, de la más frecuente a la menos. No
+      debe distinguir mayúsculas de minúsculas (devuelve las palabras en minúsculas). Usa
+      `Counter` del módulo `collections`.
+    starterCode: |
+      def mas_frecuentes(texto, n):
+          pass
+
+
+      print(mas_frecuentes("El sol y el mar y el cielo", 2))
+    solution: |
+      from collections import Counter
+
+
+      def mas_frecuentes(texto, n):
+          conteo = Counter(texto.lower().split())
+          return conteo.most_common(n)
+
+
+      print(mas_frecuentes("El sol y el mar y el cielo", 2))
+    hints:
+      - 'Importa la clase con `from collections import Counter`.'
+      - '`Counter(lista)` cuenta cuántas veces aparece cada elemento de la lista.'
+      - '`conteo.most_common(n)` devuelve justo la lista de tuplas que se pide.'
+    mistakes:
+      - |
+        from collections import Counter
+
+
+        def mas_frecuentes(texto, n):
+            conteo = Counter(texto.split())
+            return conteo.most_common(n)
+      - |
+        from collections import Counter
+
+
+        def mas_frecuentes(texto, n):
+            conteo = Counter(texto.lower())
+            return conteo.most_common(n)
+      - |
+        from collections import Counter
+
+
+        def mas_frecuentes(texto, n):
+            conteo = Counter(texto.lower().split())
+            return [palabra for palabra, veces in conteo.most_common(n)]
+    tests: |
+      r = mas_frecuentes("El sol y el mar y el cielo", 2)
+      assert r == [("el", 3), ("y", 2)], f"Con 'El sol y el mar y el cielo' y n=2 se esperaba [('el', 3), ('y', 2)] y se obtuvo {r!r}."
+      r = mas_frecuentes("a b B c C c", 3)
+      assert r == [("c", 3), ("b", 2), ("a", 1)], f"Con 'a b B c C c' y n=3 se esperaba [('c', 3), ('b', 2), ('a', 1)] y se obtuvo {r!r}."
+      assert mas_frecuentes("hola", 1) == [("hola", 1)], "Con una sola palabra debe devolver [('hola', 1)]."
+      assert mas_frecuentes("", 3) == [], "Con un texto vacío debe devolver una lista vacía."
+
+  - id: forma-de-importar
+    type: quiz
+    title: Usar lo importado
+    difficulty: 1
+    prompt: 'Después de `from math import sqrt`, ¿cómo se calcula la raíz cuadrada de 9?'
+    options:
+      - '`math.sqrt(9)`'
+      - '`sqrt(9)`'
+      - '`math(9)`'
+      - '`import sqrt(9)`'
+    answer: 1
+    explanation: '`from math import sqrt` trae solo el nombre `sqrt`, que se usa directamente. El nombre `math` no queda definido, así que `math.sqrt(9)` daría un `NameError`. Con `import math` sería al revés.'
+
+  - id: archivo-random
+    type: quiz
+    title: Un nombre de archivo problemático
+    difficulty: 2
+    prompt: 'Guardas tu programa como `random.py` y dentro escribes `import random` y luego `random.randint(1, 6)`. ¿Qué ocurre?'
+    options:
+      - 'Funciona con normalidad'
+      - 'Python avisa de que el nombre está reservado y no deja guardar el archivo'
+      - 'Falla, porque `import random` carga tu propio archivo en lugar del módulo estándar'
+      - 'Se importan los dos módulos y se combinan'
+    answer: 2
+    explanation: 'Python busca primero en la carpeta del programa, encuentra tu `random.py` y lo importa. Como tu archivo no define `randint`, aparece un error. Evita nombrar tus archivos como módulos de la biblioteca estándar.'

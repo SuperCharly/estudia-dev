@@ -1,0 +1,207 @@
+exercises:
+  - id: catalogo
+    type: sql
+    title: El catálogo
+    difficulty: 1
+    dataset: biblioteca
+    ordered: true
+    prompt: >-
+      Muestra el catálogo de la biblioteca: el `titulo` de cada libro, el nombre de su
+      autor (con el alias `autor`) y el `genero`, ordenado alfabéticamente por título.
+    starterCode: |
+      SELECT l.titulo, l.genero
+      FROM libros l
+      ORDER BY l.titulo;
+    solution: |
+      SELECT l.titulo, a.nombre AS autor, l.genero
+      FROM libros l
+      JOIN autores a ON a.id = l.autor_id
+      ORDER BY l.titulo;
+    hints:
+      - El nombre del autor está en la tabla `autores`. Únela con `libros`.
+      - 'La condición de unión es `a.id = l.autor_id`.'
+    mistakes:
+      - |
+        SELECT l.titulo, a.nombre AS autor, l.genero
+        FROM libros l
+        JOIN autores a ON a.id = l.id
+        ORDER BY l.titulo;
+      - |
+        SELECT l.titulo, a.nombre AS autor, l.genero
+        FROM libros l
+        JOIN autores a ON a.id = l.autor_id
+        ORDER BY a.nombre;
+
+  - id: prestamos-activos
+    type: sql
+    title: ¿Quién tiene qué?
+    difficulty: 2
+    dataset: biblioteca
+    ordered: true
+    prompt: >-
+      Lista los préstamos activos (sin devolver): el `titulo` del libro, el nombre del socio
+      (alias `socio`) y la `fecha_limite`. Ordena por fecha límite, de la más próxima a la
+      más lejana.
+    starterCode: |
+      SELECT l.titulo, p.fecha_limite
+      FROM prestamos p
+      JOIN libros l ON l.id = p.libro_id;
+    solution: |
+      SELECT l.titulo, s.nombre AS socio, p.fecha_limite
+      FROM prestamos p
+      JOIN libros l ON l.id = p.libro_id
+      JOIN socios s ON s.id = p.socio_id
+      WHERE p.fecha_devolucion IS NULL
+      ORDER BY p.fecha_limite;
+    hints:
+      - Agrega un segundo `JOIN` con `socios`, con la condición `s.id = p.socio_id`.
+      - Un préstamo activo tiene `fecha_devolucion IS NULL`.
+      - No olvides ordenar por `p.fecha_limite`.
+    mistakes:
+      - |
+        SELECT l.titulo, s.nombre AS socio, p.fecha_limite
+        FROM prestamos p
+        JOIN libros l ON l.id = p.libro_id
+        JOIN socios s ON s.id = p.socio_id
+        ORDER BY p.fecha_limite;
+      - |
+        SELECT l.titulo, s.nombre AS socio, p.fecha_limite
+        FROM prestamos p
+        JOIN libros l ON l.id = p.libro_id
+        JOIN socios s ON s.id = p.socio_id
+        WHERE p.fecha_devolucion IS NOT NULL
+        ORDER BY p.fecha_limite;
+      - |
+        SELECT l.titulo, s.nombre AS socio, p.fecha_limite
+        FROM prestamos p
+        JOIN libros l ON l.id = p.libro_id
+        JOIN socios s ON s.id = p.socio_id
+        WHERE p.fecha_devolucion IS NULL
+        ORDER BY p.fecha_limite DESC;
+
+  - id: prestamos-atrasados
+    type: sql
+    title: Préstamos atrasados
+    difficulty: 2
+    dataset: biblioteca
+    ordered: true
+    prompt: >-
+      Hoy es `2025-10-06`. Muestra los préstamos atrasados: los que siguen sin devolver y
+      cuya fecha límite ya pasó. Incluye el nombre del socio (alias `socio`), el `titulo`
+      del libro y los días de atraso (alias `dias_atraso`), del más atrasado al menos.
+    starterCode: ''
+    solution: |
+      SELECT s.nombre AS socio, l.titulo, DATE '2025-10-06' - p.fecha_limite AS dias_atraso
+      FROM prestamos p
+      JOIN socios s ON s.id = p.socio_id
+      JOIN libros l ON l.id = p.libro_id
+      WHERE p.fecha_devolucion IS NULL
+        AND p.fecha_limite < DATE '2025-10-06'
+      ORDER BY dias_atraso DESC;
+    hints:
+      - Parte de `prestamos` y únela con `socios` y con `libros`.
+      - "Hacen falta dos condiciones, `fecha_devolucion IS NULL` y `fecha_limite < DATE '2025-10-06'`."
+      - "Los días de atraso son `DATE '2025-10-06' - p.fecha_limite`."
+    mistakes:
+      # Incluye los que se devolvieron tarde en el pasado.
+      - |
+        SELECT s.nombre AS socio, l.titulo, DATE '2025-10-06' - p.fecha_limite AS dias_atraso
+        FROM prestamos p
+        JOIN socios s ON s.id = p.socio_id
+        JOIN libros l ON l.id = p.libro_id
+        WHERE p.fecha_limite < DATE '2025-10-06'
+        ORDER BY dias_atraso DESC;
+      - |
+        SELECT s.nombre AS socio, l.titulo, DATE '2025-10-06' - p.fecha_prestamo AS dias_atraso
+        FROM prestamos p
+        JOIN socios s ON s.id = p.socio_id
+        JOIN libros l ON l.id = p.libro_id
+        WHERE p.fecha_devolucion IS NULL
+          AND p.fecha_limite < DATE '2025-10-06'
+        ORDER BY dias_atraso DESC;
+      - |
+        SELECT s.nombre AS socio, l.titulo, DATE '2025-10-06' - p.fecha_limite AS dias_atraso
+        FROM prestamos p
+        JOIN socios s ON s.id = p.socio_id
+        JOIN libros l ON l.id = p.libro_id
+        WHERE p.fecha_devolucion IS NULL
+        ORDER BY dias_atraso DESC;
+
+  - id: ejemplares-disponibles
+    type: sql
+    title: ¿Queda algún ejemplar?
+    difficulty: 3
+    dataset: biblioteca
+    ordered: true
+    prompt: >-
+      Muestra el `titulo` de todos los libros y cuántos ejemplares hay disponibles ahora
+      (alias `disponibles`): sus `ejemplares` menos sus préstamos activos. Deben aparecer
+      todos los libros, también los que nunca se han prestado. Ordena por título.
+    starterCode: |
+      SELECT l.titulo, l.ejemplares - COUNT(p.id) AS disponibles
+      FROM libros l
+      LEFT JOIN prestamos p ON p.libro_id = l.id
+      WHERE p.fecha_devolucion IS NULL
+      GROUP BY l.id, l.titulo, l.ejemplares
+      ORDER BY l.titulo;
+    solution: |
+      SELECT l.titulo, l.ejemplares - COUNT(p.id) AS disponibles
+      FROM libros l
+      LEFT JOIN prestamos p
+        ON p.libro_id = l.id
+       AND p.fecha_devolucion IS NULL
+      GROUP BY l.id, l.titulo, l.ejemplares
+      ORDER BY l.titulo;
+    hints:
+      - Ejecuta el código inicial y cuenta las filas. Faltan los libros cuyos préstamos están todos devueltos.
+      - El `WHERE` elimina esas filas después del `LEFT JOIN`.
+      - 'Mueve la condición al `ON`, con `AND p.fecha_devolucion IS NULL`.'
+    mistakes:
+      - |
+        SELECT l.titulo, l.ejemplares - COUNT(p.id) AS disponibles
+        FROM libros l
+        LEFT JOIN prestamos p ON p.libro_id = l.id
+        GROUP BY l.id, l.titulo, l.ejemplares
+        ORDER BY l.titulo;
+      - |
+        SELECT l.titulo, l.ejemplares - COUNT(*) AS disponibles
+        FROM libros l
+        LEFT JOIN prestamos p
+          ON p.libro_id = l.id
+         AND p.fecha_devolucion IS NULL
+        GROUP BY l.id, l.titulo, l.ejemplares
+        ORDER BY l.titulo;
+      - |
+        SELECT l.titulo, l.ejemplares - COUNT(p.id) AS disponibles
+        FROM libros l
+        JOIN prestamos p
+          ON p.libro_id = l.id
+         AND p.fecha_devolucion IS NULL
+        GROUP BY l.id, l.titulo, l.ejemplares
+        ORDER BY l.titulo;
+
+  - id: on-o-where
+    type: quiz
+    title: ON o WHERE
+    difficulty: 3
+    prompt: 'En `FROM libros l LEFT JOIN prestamos p ON p.libro_id = l.id WHERE p.fecha_devolucion IS NULL`, ¿qué libros aparecen en el resultado?'
+    options:
+      - 'Todos los libros'
+      - 'Solo los libros con algún préstamo activo'
+      - 'Los libros con algún préstamo activo y los que nunca se han prestado'
+      - 'Solo los libros que nunca se han prestado'
+    answer: 2
+    explanation: 'El `LEFT JOIN` genera filas para todos los libros, pero el `WHERE` solo deja pasar aquellas donde `fecha_devolucion` es `NULL`: las de préstamos activos y las de libros sin préstamos (donde todas las columnas de `p` son `NULL`). Los libros cuyos préstamos están todos devueltos desaparecen.'
+
+  - id: por-donde-empezar
+    type: quiz
+    title: ¿Por qué tabla empezar?
+    difficulty: 1
+    prompt: 'Quieres un listado con una fila por cada socio, hayan pedido libros o no, y el número de préstamos de cada uno. ¿Cómo empieza el `FROM`?'
+    options:
+      - '`FROM prestamos p JOIN socios s ON s.id = p.socio_id`'
+      - '`FROM socios s LEFT JOIN prestamos p ON p.socio_id = s.id`'
+      - '`FROM socios s JOIN prestamos p ON p.socio_id = s.id`'
+      - '`FROM prestamos p LEFT JOIN socios s ON s.id = p.socio_id`'
+    answer: 1
+    explanation: 'Para tener una fila por socio se parte de `socios`, y `LEFT JOIN` conserva a quienes no tienen préstamos. Las otras opciones descartan a los socios sin préstamos.'

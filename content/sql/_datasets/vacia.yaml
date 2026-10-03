@@ -1,0 +1,6 @@
+title: Base de datos vacía
+description: >-
+  Esta base de datos empieza sin tablas: las creas tú. En cada ejecución vuelve a quedar
+  vacía.
+sql: |
+  -- Sin tablas: escribe tus sentencias CREATE TABLE en el editor.

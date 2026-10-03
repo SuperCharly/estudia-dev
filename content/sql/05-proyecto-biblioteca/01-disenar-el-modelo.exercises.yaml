@@ -1,0 +1,335 @@
+# Como en el módulo anterior, `checkQuery` pone a prueba las tablas creadas con operaciones
+# válidas e inválidas y devuelve una fila por regla ("sí" = se cumple).
+exercises:
+  - id: tipo-de-relacion
+    type: quiz
+    title: ¿Qué relación es?
+    difficulty: 1
+    prompt: 'En la biblioteca, un autor puede haber escrito muchos libros y cada libro tiene un solo autor. ¿Dónde va la clave foránea?'
+    options:
+      - 'En `autores`, con una columna `libro_id`'
+      - 'En `libros`, con una columna `autor_id`'
+      - 'En las dos tablas'
+      - 'En una tabla intermedia `autor_libro`'
+    answer: 1
+    explanation: 'Es una relación de uno a muchos, y la clave foránea va en el lado "muchos": cada libro guarda el `id` de su autor. Un autor no podría guardar varios libros en una sola columna. La tabla intermedia haría falta si un libro pudiera tener varios autores.'
+
+  - id: tabla-intermedia
+    type: quiz
+    title: Socios y libros
+    difficulty: 2
+    prompt: 'Un socio puede llevarse muchos libros y un mismo libro puede prestarse a muchos socios. ¿Por qué `prestamos` usa una columna `id` propia como clave primaria, en lugar de la pareja `(libro_id, socio_id)`?'
+    options:
+      - 'Porque las claves primarias no pueden tener dos columnas'
+      - 'Porque un socio puede llevarse el mismo libro más de una vez'
+      - 'Porque las claves foráneas no pueden formar parte de la clave primaria'
+      - 'Porque así las consultas son más rápidas'
+    answer: 1
+    explanation: 'Una clave primaria no admite valores repetidos. Con `(libro_id, socio_id)` como clave, un socio no podría volver a pedir un libro que ya se llevó antes. Las claves compuestas sí existen y sirven cuando la pareja no debe repetirse, como en `pedido_detalle`.'
+
+  - id: autores-y-libros
+    type: sql
+    title: Autores y libros
+    difficulty: 2
+    dataset: vacia
+    checkQuery: |
+      CREATE TEMP TABLE _pruebas (n SERIAL, regla TEXT, se_cumple TEXT);
+      CREATE FUNCTION pg_temp.probar(regla TEXT, sentencia TEXT, debe_aceptar BOOLEAN) RETURNS void AS $f$
+      BEGIN
+        BEGIN
+          EXECUTE sentencia;
+          INSERT INTO _pruebas (regla, se_cumple) VALUES (regla, CASE WHEN debe_aceptar THEN 'sí' ELSE 'no' END);
+        EXCEPTION WHEN OTHERS THEN
+          INSERT INTO _pruebas (regla, se_cumple) VALUES (regla, CASE WHEN debe_aceptar THEN 'no' ELSE 'sí' END);
+        END;
+      END $f$ LANGUAGE plpgsql;
+      SELECT pg_temp.probar('Acepta un autor con país', $$INSERT INTO autores (id, nombre, pais) VALUES (1, 'Juan Rulfo', 'México')$$, TRUE);
+      SELECT pg_temp.probar('Acepta un autor sin país', $$INSERT INTO autores (id, nombre) VALUES (2, 'Anónimo')$$, TRUE);
+      SELECT pg_temp.probar('Rechaza un autor sin nombre', $$INSERT INTO autores (id, nombre, pais) VALUES (3, NULL, 'Chile')$$, FALSE);
+      SELECT pg_temp.probar('Acepta un libro con todos sus datos', $$INSERT INTO libros (id, titulo, autor_id, genero, anio, ejemplares) VALUES (1, 'Pedro Páramo', 1, 'Novela', 1955, 2)$$, TRUE);
+      SELECT pg_temp.probar('Acepta un libro sin año ni ejemplares', $$INSERT INTO libros (id, titulo, autor_id, genero) VALUES (2, 'El llano en llamas', 1, 'Cuento')$$, TRUE);
+      SELECT pg_temp.probar('Por defecto hay 1 ejemplar', $$SELECT 1 / count(*) FROM libros WHERE id = 2 AND ejemplares = 1$$, TRUE);
+      SELECT pg_temp.probar('Rechaza un libro sin título', $$INSERT INTO libros (id, titulo, autor_id, genero) VALUES (3, NULL, 1, 'Cuento')$$, FALSE);
+      SELECT pg_temp.probar('Rechaza un libro sin género', $$INSERT INTO libros (id, titulo, autor_id, genero) VALUES (4, 'Sin género', 1, NULL)$$, FALSE);
+      SELECT pg_temp.probar('Rechaza un libro sin autor', $$INSERT INTO libros (id, titulo, autor_id, genero) VALUES (5, 'Sin autor', NULL, 'Cuento')$$, FALSE);
+      SELECT pg_temp.probar('Rechaza un autor que no existe', $$INSERT INTO libros (id, titulo, autor_id, genero) VALUES (6, 'Autor fantasma', 999, 'Cuento')$$, FALSE);
+      SELECT pg_temp.probar('Rechaza un libro con 0 ejemplares', $$INSERT INTO libros (id, titulo, autor_id, genero, ejemplares) VALUES (7, 'Agotado', 1, 'Cuento', 0)$$, FALSE);
+      SELECT regla, se_cumple FROM _pruebas ORDER BY n;
+    prompt: >-
+      Crea las dos primeras tablas de la biblioteca. `autores` tiene `id` (entero, clave
+      primaria), `nombre` (texto, obligatorio) y `pais` (texto, opcional). `libros` tiene
+      `id` (entero, clave primaria), `titulo` (texto, obligatorio), `autor_id` (entero,
+      obligatorio, debe existir en `autores`), `genero` (texto, obligatorio), `anio`
+      (entero, opcional) y `ejemplares` (entero, obligatorio, 1 por defecto y nunca menor
+      que 1).
+    starterCode: |
+      CREATE TABLE autores (
+        id     INTEGER PRIMARY KEY,
+        nombre TEXT NOT NULL,
+        pais   TEXT
+      );
+
+      CREATE TABLE libros (
+        id INTEGER PRIMARY KEY
+      );
+    solution: |
+      CREATE TABLE autores (
+        id     INTEGER PRIMARY KEY,
+        nombre TEXT NOT NULL,
+        pais   TEXT
+      );
+
+      CREATE TABLE libros (
+        id         INTEGER PRIMARY KEY,
+        titulo     TEXT NOT NULL,
+        autor_id   INTEGER NOT NULL REFERENCES autores (id),
+        genero     TEXT NOT NULL,
+        anio       INTEGER,
+        ejemplares INTEGER NOT NULL DEFAULT 1 CHECK (ejemplares >= 1)
+      );
+    hints:
+      - La tabla `autores` ya está completa. Usa Ejecutar para ver qué reglas le faltan a `libros`.
+      - 'La relación con el autor se escribe `autor_id INTEGER NOT NULL REFERENCES autores (id)`.'
+      - 'Una columna puede combinar varias reglas: `ejemplares INTEGER NOT NULL DEFAULT 1 CHECK (ejemplares >= 1)`.'
+    mistakes:
+      - |
+        CREATE TABLE autores (
+          id     INTEGER PRIMARY KEY,
+          nombre TEXT NOT NULL,
+          pais   TEXT
+        );
+        CREATE TABLE libros (
+          id         INTEGER PRIMARY KEY,
+          titulo     TEXT NOT NULL,
+          autor_id   INTEGER NOT NULL,
+          genero     TEXT NOT NULL,
+          anio       INTEGER,
+          ejemplares INTEGER NOT NULL DEFAULT 1 CHECK (ejemplares >= 1)
+        );
+      - |
+        CREATE TABLE autores (
+          id     INTEGER PRIMARY KEY,
+          nombre TEXT NOT NULL,
+          pais   TEXT
+        );
+        CREATE TABLE libros (
+          id         INTEGER PRIMARY KEY,
+          titulo     TEXT NOT NULL,
+          autor_id   INTEGER NOT NULL REFERENCES autores (id),
+          genero     TEXT NOT NULL,
+          anio       INTEGER,
+          ejemplares INTEGER NOT NULL DEFAULT 1
+        );
+      - |
+        CREATE TABLE autores (
+          id     INTEGER PRIMARY KEY,
+          nombre TEXT NOT NULL,
+          pais   TEXT
+        );
+        CREATE TABLE libros (
+          id         INTEGER PRIMARY KEY,
+          titulo     TEXT NOT NULL,
+          autor_id   INTEGER REFERENCES autores (id),
+          genero     TEXT NOT NULL,
+          anio       INTEGER NOT NULL,
+          ejemplares INTEGER NOT NULL CHECK (ejemplares >= 1)
+        );
+      - |
+        CREATE TABLE libros (
+          id         INTEGER PRIMARY KEY,
+          titulo     TEXT NOT NULL,
+          autor      TEXT NOT NULL,
+          pais       TEXT,
+          genero     TEXT NOT NULL,
+          anio       INTEGER,
+          ejemplares INTEGER NOT NULL DEFAULT 1 CHECK (ejemplares >= 1)
+        );
+
+  - id: socios-y-prestamos
+    type: sql
+    title: Socios y préstamos
+    difficulty: 3
+    dataset: vacia
+    checkQuery: |
+      CREATE TEMP TABLE _pruebas (n SERIAL, regla TEXT, se_cumple TEXT);
+      CREATE FUNCTION pg_temp.probar(regla TEXT, sentencia TEXT, debe_aceptar BOOLEAN) RETURNS void AS $f$
+      BEGIN
+        BEGIN
+          EXECUTE sentencia;
+          INSERT INTO _pruebas (regla, se_cumple) VALUES (regla, CASE WHEN debe_aceptar THEN 'sí' ELSE 'no' END);
+        EXCEPTION WHEN OTHERS THEN
+          INSERT INTO _pruebas (regla, se_cumple) VALUES (regla, CASE WHEN debe_aceptar THEN 'no' ELSE 'sí' END);
+        END;
+      END $f$ LANGUAGE plpgsql;
+      SELECT pg_temp.probar('Las tablas autores y libros siguen ahí', $$INSERT INTO autores (id, nombre) VALUES (1, 'Juan Rulfo'); $$, TRUE);
+      SELECT pg_temp.probar('Se puede registrar un libro', $$INSERT INTO libros (id, titulo, autor_id, genero) VALUES (1, 'Pedro Páramo', 1, 'Novela')$$, TRUE);
+      SELECT pg_temp.probar('Acepta un socio con email', $$INSERT INTO socios (id, nombre, email, fecha_alta) VALUES (1, 'Ana Torres', 'ana@example.com', '2025-01-10')$$, TRUE);
+      SELECT pg_temp.probar('Acepta un socio sin email ni fecha de alta', $$INSERT INTO socios (id, nombre) VALUES (2, 'Luis Pérez')$$, TRUE);
+      SELECT pg_temp.probar('La fecha de alta toma un valor por defecto', $$SELECT 1 / count(*) FROM socios WHERE id = 2 AND fecha_alta IS NOT NULL$$, TRUE);
+      SELECT pg_temp.probar('Acepta otro socio sin email', $$INSERT INTO socios (id, nombre) VALUES (3, 'Marta Gómez')$$, TRUE);
+      SELECT pg_temp.probar('Rechaza un email repetido', $$INSERT INTO socios (id, nombre, email) VALUES (4, 'Otra Ana', 'ana@example.com')$$, FALSE);
+      SELECT pg_temp.probar('Rechaza un socio sin nombre', $$INSERT INTO socios (id, nombre) VALUES (5, NULL)$$, FALSE);
+      SELECT pg_temp.probar('Acepta un préstamo sin devolver', $$INSERT INTO prestamos (id, libro_id, socio_id, fecha_prestamo, fecha_limite) VALUES (1, 1, 1, '2025-10-01', '2025-10-15')$$, TRUE);
+      SELECT pg_temp.probar('El mismo socio puede volver a pedir el mismo libro', $$INSERT INTO prestamos (id, libro_id, socio_id, fecha_prestamo, fecha_limite, fecha_devolucion) VALUES (2, 1, 1, '2025-08-01', '2025-08-15', '2025-08-10')$$, TRUE);
+      SELECT pg_temp.probar('Rechaza un préstamo sin fecha', $$INSERT INTO prestamos (id, libro_id, socio_id, fecha_prestamo, fecha_limite) VALUES (3, 1, 1, NULL, '2025-10-15')$$, FALSE);
+      SELECT pg_temp.probar('Rechaza un préstamo sin fecha límite', $$INSERT INTO prestamos (id, libro_id, socio_id, fecha_prestamo, fecha_limite) VALUES (4, 1, 1, '2025-10-01', NULL)$$, FALSE);
+      SELECT pg_temp.probar('Rechaza una fecha límite anterior al préstamo', $$INSERT INTO prestamos (id, libro_id, socio_id, fecha_prestamo, fecha_limite) VALUES (5, 1, 1, '2025-10-01', '2025-09-30')$$, FALSE);
+      SELECT pg_temp.probar('Rechaza una devolución anterior al préstamo', $$INSERT INTO prestamos (id, libro_id, socio_id, fecha_prestamo, fecha_limite, fecha_devolucion) VALUES (6, 1, 1, '2025-10-01', '2025-10-15', '2025-09-30')$$, FALSE);
+      SELECT pg_temp.probar('Rechaza un libro que no existe', $$INSERT INTO prestamos (id, libro_id, socio_id, fecha_prestamo, fecha_limite) VALUES (7, 999, 1, '2025-10-01', '2025-10-15')$$, FALSE);
+      SELECT pg_temp.probar('Rechaza un socio que no existe', $$INSERT INTO prestamos (id, libro_id, socio_id, fecha_prestamo, fecha_limite) VALUES (8, 1, 999, '2025-10-01', '2025-10-15')$$, FALSE);
+      SELECT regla, se_cumple FROM _pruebas ORDER BY n;
+    prompt: >-
+      Completa el modelo. `socios` tiene `id` (entero, clave primaria), `nombre` (texto,
+      obligatorio), `email` (texto, opcional y sin repetidos) y `fecha_alta` (fecha,
+      obligatoria, por defecto la fecha actual). `prestamos` tiene `id` (entero, clave
+      primaria), `libro_id` y `socio_id` (enteros, obligatorios, deben existir en `libros`
+      y en `socios`), `fecha_prestamo` y `fecha_limite` (fechas, obligatorias) y
+      `fecha_devolucion` (fecha, opcional). La fecha límite no puede ser anterior a la del
+      préstamo, y la de devolución, si existe, tampoco.
+    starterCode: |
+      CREATE TABLE autores (
+        id     INTEGER PRIMARY KEY,
+        nombre TEXT NOT NULL,
+        pais   TEXT
+      );
+
+      CREATE TABLE libros (
+        id         INTEGER PRIMARY KEY,
+        titulo     TEXT NOT NULL,
+        autor_id   INTEGER NOT NULL REFERENCES autores (id),
+        genero     TEXT NOT NULL,
+        anio       INTEGER,
+        ejemplares INTEGER NOT NULL DEFAULT 1 CHECK (ejemplares >= 1)
+      );
+
+      -- Crea aquí las tablas socios y prestamos
+    solution: |
+      CREATE TABLE autores (
+        id     INTEGER PRIMARY KEY,
+        nombre TEXT NOT NULL,
+        pais   TEXT
+      );
+
+      CREATE TABLE libros (
+        id         INTEGER PRIMARY KEY,
+        titulo     TEXT NOT NULL,
+        autor_id   INTEGER NOT NULL REFERENCES autores (id),
+        genero     TEXT NOT NULL,
+        anio       INTEGER,
+        ejemplares INTEGER NOT NULL DEFAULT 1 CHECK (ejemplares >= 1)
+      );
+
+      CREATE TABLE socios (
+        id         INTEGER PRIMARY KEY,
+        nombre     TEXT NOT NULL,
+        email      TEXT UNIQUE,
+        fecha_alta DATE NOT NULL DEFAULT CURRENT_DATE
+      );
+
+      CREATE TABLE prestamos (
+        id               INTEGER PRIMARY KEY,
+        libro_id         INTEGER NOT NULL REFERENCES libros (id),
+        socio_id         INTEGER NOT NULL REFERENCES socios (id),
+        fecha_prestamo   DATE NOT NULL,
+        fecha_limite     DATE NOT NULL,
+        fecha_devolucion DATE,
+        CHECK (fecha_limite >= fecha_prestamo),
+        CHECK (fecha_devolucion IS NULL OR fecha_devolucion >= fecha_prestamo)
+      );
+    hints:
+      - Crea primero `socios`, porque `prestamos` hace referencia a ella.
+      - '`UNIQUE` permite varios `NULL`, así que sirve para un email opcional y sin repetidos.'
+      - 'Una regla que compara dos columnas va al final de la tabla: `CHECK (fecha_limite >= fecha_prestamo)`.'
+      - 'Para la devolución opcional: `CHECK (fecha_devolucion IS NULL OR fecha_devolucion >= fecha_prestamo)`.'
+    mistakes:
+      - |
+        CREATE TABLE autores (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, pais TEXT);
+        CREATE TABLE libros (
+          id INTEGER PRIMARY KEY, titulo TEXT NOT NULL, autor_id INTEGER NOT NULL REFERENCES autores (id),
+          genero TEXT NOT NULL, anio INTEGER, ejemplares INTEGER NOT NULL DEFAULT 1 CHECK (ejemplares >= 1)
+        );
+        CREATE TABLE socios (
+          id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, email TEXT UNIQUE,
+          fecha_alta DATE NOT NULL DEFAULT CURRENT_DATE
+        );
+        CREATE TABLE prestamos (
+          libro_id         INTEGER NOT NULL REFERENCES libros (id),
+          socio_id         INTEGER NOT NULL REFERENCES socios (id),
+          fecha_prestamo   DATE NOT NULL,
+          fecha_limite     DATE NOT NULL,
+          fecha_devolucion DATE,
+          PRIMARY KEY (libro_id, socio_id),
+          CHECK (fecha_limite >= fecha_prestamo),
+          CHECK (fecha_devolucion IS NULL OR fecha_devolucion >= fecha_prestamo)
+        );
+      - |
+        CREATE TABLE autores (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, pais TEXT);
+        CREATE TABLE libros (
+          id INTEGER PRIMARY KEY, titulo TEXT NOT NULL, autor_id INTEGER NOT NULL REFERENCES autores (id),
+          genero TEXT NOT NULL, anio INTEGER, ejemplares INTEGER NOT NULL DEFAULT 1 CHECK (ejemplares >= 1)
+        );
+        CREATE TABLE socios (
+          id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, email TEXT UNIQUE,
+          fecha_alta DATE NOT NULL DEFAULT CURRENT_DATE
+        );
+        CREATE TABLE prestamos (
+          id               INTEGER PRIMARY KEY,
+          libro_id         INTEGER NOT NULL REFERENCES libros (id),
+          socio_id         INTEGER NOT NULL REFERENCES socios (id),
+          fecha_prestamo   DATE NOT NULL,
+          fecha_limite     DATE NOT NULL,
+          fecha_devolucion DATE
+        );
+      - |
+        CREATE TABLE autores (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, pais TEXT);
+        CREATE TABLE libros (
+          id INTEGER PRIMARY KEY, titulo TEXT NOT NULL, autor_id INTEGER NOT NULL REFERENCES autores (id),
+          genero TEXT NOT NULL, anio INTEGER, ejemplares INTEGER NOT NULL DEFAULT 1 CHECK (ejemplares >= 1)
+        );
+        CREATE TABLE socios (
+          id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, email TEXT NOT NULL UNIQUE,
+          fecha_alta DATE NOT NULL DEFAULT CURRENT_DATE
+        );
+        CREATE TABLE prestamos (
+          id               INTEGER PRIMARY KEY,
+          libro_id         INTEGER NOT NULL REFERENCES libros (id),
+          socio_id         INTEGER NOT NULL REFERENCES socios (id),
+          fecha_prestamo   DATE NOT NULL,
+          fecha_limite     DATE NOT NULL,
+          fecha_devolucion DATE NOT NULL,
+          CHECK (fecha_limite >= fecha_prestamo),
+          CHECK (fecha_devolucion >= fecha_prestamo)
+        );
+      - |
+        CREATE TABLE autores (id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, pais TEXT);
+        CREATE TABLE libros (
+          id INTEGER PRIMARY KEY, titulo TEXT NOT NULL, autor_id INTEGER NOT NULL REFERENCES autores (id),
+          genero TEXT NOT NULL, anio INTEGER, ejemplares INTEGER NOT NULL DEFAULT 1 CHECK (ejemplares >= 1)
+        );
+        CREATE TABLE socios (
+          id INTEGER PRIMARY KEY, nombre TEXT NOT NULL, email TEXT,
+          fecha_alta DATE NOT NULL DEFAULT CURRENT_DATE
+        );
+        CREATE TABLE prestamos (
+          id               INTEGER PRIMARY KEY,
+          libro_id         INTEGER NOT NULL,
+          socio_id         INTEGER NOT NULL,
+          fecha_prestamo   DATE NOT NULL,
+          fecha_limite     DATE NOT NULL,
+          fecha_devolucion DATE,
+          CHECK (fecha_limite >= fecha_prestamo),
+          CHECK (fecha_devolucion IS NULL OR fecha_devolucion >= fecha_prestamo)
+        );
+
+  - id: donde-guardar-el-pais
+    type: quiz
+    title: Un dato, un lugar
+    difficulty: 2
+    prompt: 'Alguien propone guardar el país del autor en una columna `pais_autor` de la tabla `libros`, para ahorrarse la tabla `autores`. ¿Cuál es el principal problema?'
+    options:
+      - 'Las consultas necesitarían más `JOIN`'
+      - 'El país se repetiría en cada libro del autor y podría quedar escrito de formas distintas'
+      - 'PostgreSQL no permite columnas de texto repetidas'
+      - 'La tabla `libros` ocuparía menos espacio'
+    answer: 1
+    explanation: 'El mismo dato se guardaría muchas veces y, con el tiempo, aparecerían versiones distintas (`México`, `Mexico`, `MX`). Corregirlo exigiría cambiar muchas filas. Con una tabla `autores`, cada dato vive en un solo lugar. La propuesta sí ahorraría algún `JOIN`, pero a costa de la consistencia de los datos.'
