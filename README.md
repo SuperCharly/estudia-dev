@@ -39,7 +39,7 @@ estudia-dev/
 | `npm run lint`         | ESLint                                                              |
 | `npm run format`       | Prettier                                                            |
 | `npm run audit:deps`   | Auditoría de dependencias con excepciones documentadas              |
-| `npm run verify`       | Todo lo anterior, en el orden de la CI                              |
+| `npm run verify`       | Auditoría de dependencias y todo lo anterior, en el orden de la CI  |
 
 La primera vez que ejecutes las pruebas E2E instala el navegador: `npx playwright install chromium`.
 
