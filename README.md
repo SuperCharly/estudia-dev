@@ -80,6 +80,9 @@ La primera vez que ejecutes las pruebas E2E instala el navegador: `npx playwrigh
   PGlite para PostgreSQL), con tiempo límite ante bucles infinitos.
 - **CSP estricta** con hashes generados por Astro (sin `unsafe-inline`) y cabeceras de
   seguridad en `web/public/_headers` (HSTS, `frame-ancestors 'none'`, `nosniff`, etc.).
+- Los workers tienen su propia CSP (la de la página no se les aplica): el código de un
+  estudiante no puede hacer peticiones a otros dominios. Las pruebas E2E sirven el sitio
+  aplicando `_headers` como Cloudflare Pages y lo comprueban.
 - **Sin dependencias de CDN**: Pyodide se sirve desde el propio sitio.
 - Todo lo leído de `localStorage` se valida con Zod; si está corrupto se ignora.
 - El contenido se escribe en Markdown puro (no MDX), así que no puede ejecutar código

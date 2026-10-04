@@ -17,13 +17,14 @@ jobs:
       - uses: actions/checkout@v7
       - name: Verificar enlaces
         id: lychee
-        uses: lycheeverse/lychee-action@v2
+        # Acciones de terceros fijadas por commit: una etiqueta puede moverse; un commit, no.
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
           args: --no-progress --max-concurrency 4 --accept 200,429 'content/**/*.md' 'catalog/books.json'
           fail: false
       - name: Abrir un issue si hay enlaces rotos
         if: steps.lychee.outputs.exit_code != 0
-        uses: peter-evans/create-issue-from-file@v6
+        uses: peter-evans/create-issue-from-file@fca9117c27cdc29c6c4db3b86c48e4115a786710 # v6.0.0
         with:
           title: Enlaces rotos detectados
           content-filepath: ./lychee/out.md

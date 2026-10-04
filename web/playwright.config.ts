@@ -4,7 +4,7 @@ const PORT = 4321;
 
 /**
  * Pruebas E2E sobre el sitio construido (`npm run build`): así se verifica la CSP real,
- * que Astro solo genera en el build.
+ * que Astro solo genera en el build, junto con las cabeceras de `public/_headers`.
  */
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -24,7 +24,8 @@ export default defineConfig({
     { name: 'mobile', use: { ...devices['Pixel 7'] }, testMatch: /navigation\.spec\.ts/ },
   ],
   webServer: {
-    command: `npx astro preview --port ${PORT}`,
+    // Sirve dist/ aplicando _headers como Cloudflare Pages (`astro preview` los ignora).
+    command: `node scripts/serve-dist.mjs ${PORT}`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,

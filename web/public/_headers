@@ -11,8 +11,14 @@
   Cross-Origin-Opener-Policy: same-origin
 
 # Recursos con hash en el nombre: caché de larga duración.
+# Los workers que ejecutan el código de los estudiantes se sirven desde aquí. La CSP de la
+# página (<meta>) no se aplica a un worker: el navegador usa la de la respuesta de su script.
+# Esta política impide que ese código haga peticiones a otros dominios; 'wasm-unsafe-eval'
+# es lo mínimo que necesitan Pyodide y PGlite para compilar WebAssembly. En los demás
+# recursos (CSS, JS de la página) esta cabecera no tiene efecto.
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; object-src 'none'; base-uri 'none'
 
 /pyodide/*
   Cache-Control: public, max-age=604800
