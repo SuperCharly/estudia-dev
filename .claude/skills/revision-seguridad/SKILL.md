@@ -92,7 +92,7 @@ indicado.
 | Ejecución de código | `web/src/workers/`, `web/src/lib/runners/` | El código del estudiante solo corre dentro del worker; sigue habiendo tiempo límite; el worker no recibe datos que no necesita |
 | Salida en pantalla | `web/src/components/` | Lo que produce el código del estudiante se muestra como texto. Busca `dangerouslySetInnerHTML`, `set:html` e `innerHTML`: no deberían aparecer |
 | Datos del navegador | `web/src/lib/progress/` | Todo lo leído de `localStorage` se valida con Zod antes de usarse |
-| Evaluadores | `web/src/lib/runners/**/grader.ts`, `harness.py` | Un cambio no debe hacer que se apruebe una respuesta incorrecta ni revelar los datos de verificación ocultos o las soluciones al navegador |
+| Evaluadores | `web/src/lib/runners/**/grader.ts`, `harness.py` | Un cambio no debe hacer que se apruebe una respuesta incorrecta ni mostrar en pantalla los datos de verificación ocultos (el mensaje de rechazo no los revela). Soluciones y datos ocultos sí viajan al navegador, porque la corrección ocurre ahí: es la limitación documentada en el README, no un fallo |
 | Contenido | `content/**` | Cada ejercicio de código tiene `mistakes`; los de SQL con datos usan un dataset con `verificationSql`; las fuentes son documentación oficial con `https`; no hay texto copiado de libros que no se puedan adaptar |
 | Catálogo | `catalog/books.json` | La licencia indicada está comprobada en la fuente original; `sin-verificar` si no lo está |
 | CI y dependencias | `.github/**`, `web/package.json`, `web/audit-exceptions.json` | No se ha quitado ni relajado una comprobación; los permisos de los workflows siguen siendo mínimos; una dependencia nueva es necesaria y está mantenida |
