@@ -33,7 +33,7 @@
     "@electric-sql/pglite": "^0.5.8",
     "@tailwindcss/typography": "^0.5.20",
     "@tailwindcss/vite": "^4.3.3",
-    "astro": "^7.3.5",
+    "astro": "^7.4.7",
     "codemirror": "^6.0.2",
     "pyodide": "^314.0.7",
     "react": "^19.3.0",
